@@ -1,0 +1,45 @@
+{
+  "name": "code-review-mcp-server",
+  "author": "Orcus",
+  "version": "1.0.0",
+  "description": "MCP Server with Code Review",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "build": "npm run type-check && npm run build:rollup",
+    "build:rollup": "rm -rf dist && rollup -c",
+    "start": "npx @modelcontextprotocol/inspector node $(node ./scripts/getDistPath.js)",
+    "type-check": "tsc --noEmit"
+  },
+  "keywords": [
+    "code-review",
+    "mcp",
+    "cursor",
+    "notion"
+  ],
+  "bin": {
+    "code-review-mcp-server": "./dist/index.js"
+  },
+  "files": [
+    "dist/**/*",
+    "scripts/**/*",
+    "README.md"
+  ],
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.4.1",
+    "@notionhq/client": "^2.2.16",
+    "dotenv": "^16.4.7",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^25.0.7",
+    "@rollup/plugin-json": "^6.1.0",
+    "@rollup/plugin-node-resolve": "^15.2.3",
+    "@rollup/plugin-terser": "^0.4.4",
+    "@rollup/plugin-typescript": "^11.1.6",
+    "@types/node": "^22.13.0",
+    "rollup": "^4.36.0",
+    "tslib": "^2.6.2",
+    "typescript": "^5.7.3"
+  }
+}
