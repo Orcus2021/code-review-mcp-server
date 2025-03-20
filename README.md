@@ -23,14 +23,25 @@ To use this tool in Cursor, you need to add the following configuration to your 
       "command": "npx",
       "args": ["-y", "code-review-mcp-server"],
       "env": {
-        "NOTION_API_KEY": "your_notion_api_key",
-        "NOTION_CODE_REVIEW_GUIDELINE_CODE_BLOCK_URL": "code review",
-        "NOTION_STYLE_GUIDELINE_CODE_BLOCK_URL": "style guide"
+        "NOTION_API_KEY": "notion_api_key",
+        "NOTION_CODE_REVIEW_GUIDELINE_CODE_BLOCK_URL": "notion_code_block_url_here",
+        "NOTION_STYLE_GUIDELINE_CODE_BLOCK_URL": "notion_code_block_url_here"
       }
     }
   }
 }
 ```
+
+### Enhancing AI Tool Usage with Cursor Rules
+
+For optimal integration with Cursor's AI assistant, we recommend adding the following rule to your Cursor Rules:
+
+```
+Tools
+- Whenever the terms 'code review' and 'base branch' appear in the chat, utilize the codeReview MCP tool to generate a diff and associated instructions. Subsequently, use the generated diff and instructions to conduct a thorough code review of the files of the proposed changes.
+```
+
+This rule instructs the AI to automatically utilize the Code Review MCP tool when relevant keywords are detected in your conversations, significantly enhancing workflow efficiency.
 
 Reference documentation: [Cursor Model Context Protocol](https://docs.cursor.com/context/model-context-protocol)
 

@@ -1,15 +1,20 @@
 {
   "name": "code-review-mcp-server",
   "author": "Orcus",
-  "version": "1.0.0",
+  "version": "1.2.1",
   "description": "MCP Server with Code Review",
   "license": "MIT",
   "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Orcus2021/code-review-mcp-server.git"
+  },
   "scripts": {
     "build": "npm run type-check && npm run build:rollup",
     "build:rollup": "rm -rf dist && rollup -c",
-    "start": "npx @modelcontextprotocol/inspector node $(node ./scripts/getDistPath.js)",
-    "type-check": "tsc --noEmit"
+    "start-inspector": "npx @modelcontextprotocol/inspector node $(node ./scripts/getDistPath.js)",
+    "type-check": "tsc --noEmit",
+    "release": "npm run build && npm publish"
   },
   "keywords": [
     "code-review",
@@ -21,9 +26,13 @@
     "code-review-mcp-server": "./dist/index.js"
   },
   "files": [
-    "dist/**/*",
-    "scripts/**/*",
-    "README.md"
+    "dist",
+    "src",
+    "scripts",
+    "README.md",
+    "rollup.config.js",
+    "tsconfig.json",
+    ".env.example"
   ],
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.4.1",
