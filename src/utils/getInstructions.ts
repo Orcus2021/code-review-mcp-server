@@ -41,12 +41,12 @@ export const getInstructions = ({
 ### Step 4: Style Guide Compliance
 * **Goal:** Ensure code complies with style guide ${styleGuideline}
 * Check formatting, naming conventions, comments, structure
-* **Output:** Record non-compliant items with "⚠️ NON-COMPLIANT" markers
+* **Output:** Record non-compliant items with "🔧 FIXED" markers
 
 ### Step 5: Code Review Guidelines Compliance
 * **Goal:** Ensure changes comply with guidelines ${codeReviewGuideline}
 * Check readability, maintainability, security, test coverage
-* **Output:** Record non-compliant items with "⚠️ NON-COMPLIANT" markers
+* **Output:** Record non-compliant items with "🔧 FIXED" markers
 
 ### Step 6: Recommendations & Summary
 * Provide specific fix suggestions for each issue from Step 3
