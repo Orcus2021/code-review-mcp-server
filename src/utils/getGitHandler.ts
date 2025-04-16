@@ -188,3 +188,33 @@ export function formatDiffWithLineNumbers(diffContent: string): string {
 
   return formattedLines.join("\n");
 }
+
+/**
+ * Fetches diff content from a GitHub PR URL using gh CLI
+ */
+export function getGitHubPRDiff(prUrl: string): ValidationResult<string> {
+  try {
+    // Execute gh pr diff command
+    const diff = execSync(`gh pr diff ${prUrl}`).toString();
+
+    if (!diff || diff.trim() === "") {
+      return {
+        isValid: false,
+        errorMessage:
+          "No differences found in the pull request or invalid PR URL.",
+      };
+    }
+
+    return {
+      isValid: true,
+      data: diff,
+    };
+  } catch (error) {
+    return {
+      isValid: false,
+      errorMessage: `Error fetching PR diff: ${
+        error instanceof Error ? error.message : String(error)
+      }`,
+    };
+  }
+}
