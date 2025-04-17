@@ -29,14 +29,39 @@ export const getInstructions = ({
     * Identify dependencies (imports, exports)
     * Check type definitions and interfaces
 
-### Step 3: Code Issues & Optimizations
-* **Goal:** Identify bugs, errors, and performance bottlenecks
-* Check for:
+### Step 3: Code Issues, Optimizations & Logical Flaws Analysis
+* **Goal:** Comprehensively identify code issues, optimization opportunities, and potential logical flaws
+* Must check the following aspects, ensuring coverage across basic, intermediate, and advanced analysis levels:
+
+  * **Basic Issue Detection (Basic Level):**
     * Syntax and logical errors
     * Code that may crash or behave incorrectly
     * Inefficient code patterns
     * Resource leaks or performance issues
-* **Output:** Record all issues with location and description
+  
+  * **In-depth Optimization Analysis (Intermediate Level):**
+    * Code redundancy: Look for repeated logic that could be extracted into functions or constants
+    * Complexity: Identify overly complex functions or components
+    * Naming and abstraction: Evaluate if naming and abstraction levels are appropriate
+    * Testability: Check if the code is easy to test
+    * Performance optimization: Check if useMemo/useCallback can be used to optimize rendering
+    * Component decomposition: Evaluate if components have single responsibilities and can be further broken down
+  
+  * **Logical Flaw Detection (Advanced Level):**
+    * Edge cases: Check if various input scenarios are considered, including exceptional cases
+    * Concurrency issues: Evaluate potential problems with concurrent operations
+    * State management: Check if state transitions are reasonable and complete
+    * Error handling: Assess the completeness of error handling
+    * Security considerations: Check for potential security risks
+    * User experience: Consider the impact of code changes on user experience
+    * Scalability: Assess whether the code can adapt to future requirement changes
+    * Timezone handling: Check if date/time-related logic correctly handles timezones
+    * Internationalization issues: Ensure proper implementation of multi-language support
+    * Data consistency: Evaluate if data remains consistent across different states
+    * Conditional logic completeness: Check if all possible condition branches are covered
+    * Default value handling: Ensure default values are chosen reasonably and won't cause unexpected behavior
+
+* **Output:** Record all issues with location, description, and clearly indicate severity and priority of the issues
 
 ### Step 4: Style Guide Compliance
 * **Goal:** Ensure code complies with style guide ${styleGuideline}
@@ -54,13 +79,6 @@ export const getInstructions = ({
 * Summarize issues by category (Issues, Style, Guidelines)
 * **Final Decision:** Determine if code is acceptable or needs changes
 * **Important:** DO NOT approve changes violating guidelines
-
-### Step 7: Automatic Issue Correction
-* For each identified issue with a clear fix, use the edit_file tool to automatically apply changes
-* Apply corrections without requiring additional confirmation from the user
-* For issues requiring refactoring or with multiple solutions, choose the most conservative and safe approach
-* After applying each correction, note in the report that the fix has been automatically applied
-* Only apply automatic fixes for straightforward issues; complex problems should only include recommendations
 
 ## Review Output Format
 
@@ -85,13 +103,26 @@ export const getInstructions = ({
   \`\`\`
 - **Status:** [Automatically Fixed/Fix Recommended]
 
-**If no issues are found in a file, explicitly state: "No issues found in this file."**
+ **Optimization Opportunities:**
+  1. [Specific optimization suggestion 1]
+  2. [Specific optimization suggestion 2]
+  ...
+  
+  **Potential Logical Flaws:**
+  1. [Potential logical flaw 1]
+  2. [Potential logical flaw 2]
+  ...
+
+**Even if no issues, optimization points, or logical flaws are found, must explicitly state "After comprehensive review, no issues, obvious optimization opportunities, or logical flaws were found"**
+
+* This analysis must be based on a deep understanding of the entire code context, not just surface-level code formatting issues
 
 ### Format 2: Final Decision Format
 **Conclusion:**
 - **Status:** [Acceptable/Needs Modification] 
 - **Main Issues:** [If any, must list specific issues found]
 - **Required Changes:** [Must-fix items with specific references]
+- **Optimization & Logical Flaws Summary:** [Key optimization suggestions and logical flaws from Step 3]
 - **Suggested Improvements:** [Optional items with clear benefits]
 - **Applied Fixes:** [List of issues that were automatically fixed]
 
@@ -108,6 +139,8 @@ export const getInstructions = ({
 **IMPORTANT: Your review MUST follow this strict structure. For each file in the diff, provide analysis using Format 1. Then provide an overall conclusion using Format 2. Use the appropriate markers from the Marking Rules.**
 
 **CRITICAL: NEVER skip reading the complete file content. ALWAYS execute read_file with should_read_entire_file=true for EVERY modified file before analyzing it.**
+
+**You MUST analyze all review rules and guidelines mentioned in the review instructions, ensuring comprehensive code review coverage. For each checkpoint, not only check for rule violations but also provide optimization suggestions.**
 
 Please provide the code diff for review.
   `;
