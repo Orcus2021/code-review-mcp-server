@@ -19,6 +19,23 @@ export const getLocalBranches = ({
   }).trim();
 };
 
+export const fetchSpecificBranch = (
+  folderPath: string,
+  branchName: string
+): boolean => {
+  try {
+    // Fetch the specific branch from origin
+    execSync(`git -C "${folderPath}" fetch origin ${branchName}`, {
+      encoding: "utf-8",
+    });
+
+    return true;
+  } catch (error) {
+    console.error(`Warning: Failed to fetch branch ${branchName}: ${error}`);
+    return false;
+  }
+};
+
 export const getRemoteBranches = ({
   folderPath,
   branchName,
@@ -86,8 +103,9 @@ export function validateBaseBranch(
       return { isValid: true, data: baseBranch };
     }
 
-    // If not found locally, check remote repositories
     try {
+      fetchSpecificBranch(folderPath, baseBranch);
+
       const remoteBranches = getRemoteBranches({
         folderPath,
         branchName: baseBranch,
@@ -105,7 +123,7 @@ export function validateBaseBranch(
 
     return {
       isValid: false,
-      errorMessage: `Could not find branch '${baseBranch}'. Please check if the branch name is correct.`,
+      errorMessage: `Could not find base branch: '${baseBranch}'. Please check if the branch name is correct.`,
     };
   } catch (error) {
     return {
