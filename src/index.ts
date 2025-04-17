@@ -21,6 +21,20 @@ import {
   runCodeReviewWithGithubUrlTool,
 } from "./tools/codeReviewWithGithubUrl.js";
 
+import {
+  addPRSummaryCommentToolName,
+  addPRSummaryCommentToolDescription,
+  AddPRSummaryCommentToolSchema,
+  runAddPRSummaryCommentTool,
+} from "./tools/addPRSummaryComment.js";
+
+import {
+  addPRLineCommentToolName,
+  addPRLineCommentToolDescription,
+  AddPRLineCommentToolSchema,
+  runAddPRLineCommentTool,
+} from "./tools/addPRLineComment.js";
+
 /**
  * CodeReview
  *  - Runs git diff between branch and base branch
@@ -29,6 +43,12 @@ import {
  * CodeReviewWithGithubUrl
  *  - Fetches diff from a GitHub PR URL
  *  - Returns the diff along with instructions to review and fix issues
+ *
+ * AddPRSummaryComment
+ *  - Adds a summary comment to a GitHub PR
+ *
+ * AddPRLineComment
+ *  - Adds multiple comments to specific lines in a GitHub PR
  */
 
 const server = new Server(
@@ -81,6 +101,66 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
           required: ["url"],
         },
       },
+      {
+        name: addPRSummaryCommentToolName,
+        description: addPRSummaryCommentToolDescription,
+        inputSchema: {
+          type: "object",
+          properties: {
+            url: {
+              type: "string",
+              description:
+                "A GitHub pull request URL to add the comment to (required).",
+            },
+            commentMessage: {
+              type: "string",
+              description: "The comment message to add to the PR (required).",
+            },
+          },
+          required: ["url", "commentMessage"],
+        },
+      },
+      {
+        name: addPRLineCommentToolName,
+        description: addPRLineCommentToolDescription,
+        inputSchema: {
+          type: "object",
+          properties: {
+            url: {
+              type: "string",
+              description:
+                "A GitHub pull request URL to add the comments to (required).",
+            },
+            comments: {
+              type: "array",
+              description:
+                "Array of comments to add to specific lines in the PR.",
+              items: {
+                type: "object",
+                properties: {
+                  filePath: {
+                    type: "string",
+                    description:
+                      "Path to the file in the repository to comment on.",
+                  },
+                  line: {
+                    type: "string",
+                    description:
+                      'Integer representing the specific line number to add a comment to. Must be a line that has been changed in the PR diff. Line ranges (e.g., "4-6") are not supported by GitHub API',
+                  },
+                  commentMessage: {
+                    type: "string",
+                    description:
+                      "The comment message to add to the PR (required).",
+                  },
+                },
+                required: ["filePath", "line", "commentMessage"],
+              },
+            },
+          },
+          required: ["url", "comments"],
+        },
+      },
     ],
   };
 });
@@ -95,6 +175,16 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         request.params.arguments
       );
       return await runCodeReviewWithGithubUrlTool(validated);
+    } else if (request.params.name === addPRSummaryCommentToolName) {
+      const validated = AddPRSummaryCommentToolSchema.parse(
+        request.params.arguments
+      );
+      return await runAddPRSummaryCommentTool(validated);
+    } else if (request.params.name === addPRLineCommentToolName) {
+      const validated = AddPRLineCommentToolSchema.parse(
+        request.params.arguments
+      );
+      return await runAddPRLineCommentTool(validated);
     } else {
       throw new Error(`Unknown tool: ${request.params.name}`);
     }
@@ -110,10 +200,10 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 async function main() {
   const transport = new StdioServerTransport();
   await server.connect(transport);
-  console.error("Cursor Tools MCP Server running on stdio");
+  process.stderr.write("Cursor Tools MCP Server running on stdio");
 }
 
 main().catch((error) => {
-  console.error("Fatal error:", error);
+  process.stderr.write(`Fatal error: ${error}`);
   process.exit(1);
 });
