@@ -5,9 +5,37 @@ This tool is a Cursor plugin based on the Model Context Protocol (MCP) that auto
 ## Features
 
 - Compare code differences between two git branches
+- Compare code differences from GitHub pull request URLs
+- Add summary comments to GitHub pull requests
+- Add line-specific comments to GitHub pull requests
 - Provide detailed code review guidelines
 - Support Notion integration to retrieve review guidelines from Notion code blocks, with default guidelines as fallback
 - Include pre-configured style and code review guidelines
+
+## Prerequisites
+
+### GitHub CLI Installation
+
+This tool requires the GitHub CLI to be installed globally on your machine:
+
+```bash
+# MacOS
+brew install gh
+
+# Windows
+winget install -e --id GitHub.cli
+
+# Linux
+sudo apt install gh  # Debian/Ubuntu
+```
+
+After installation, authenticate with your GitHub account:
+
+```bash
+gh auth login
+```
+
+For more installation options, visit the [GitHub CLI documentation](https://cli.github.com/manual/installation).
 
 ## Cursor Configuration
 
@@ -31,17 +59,6 @@ To use this tool in Cursor, you need to add the following configuration to your 
   }
 }
 ```
-
-### Enhancing AI Tool Usage with Cursor Rules
-
-For optimal integration with Cursor's AI assistant, we recommend adding the following rule to your Cursor Rules:
-
-```
-Tools
-- Whenever the terms 'code review' and 'base branch' appear in the chat, utilize the codeReview MCP tool to generate a diff and associated instructions. Subsequently, use the generated diff and instructions to conduct a thorough code review of the files of the proposed changes.
-```
-
-This rule instructs the AI to automatically utilize the Code Review MCP tool when relevant keywords are detected in your conversations, significantly enhancing workflow efficiency.
 
 Reference documentation: [Cursor Model Context Protocol](https://docs.cursor.com/context/model-context-protocol)
 
@@ -78,6 +95,8 @@ For detailed instructions, refer to: [Notion API Connections Guide](https://www.
 
 ## Usage
 
+### Local Git Branch Review
+
 In the Cursor chat window, enter the following command:
 
 ```
@@ -91,6 +110,22 @@ This will:
 2. Automatically generate a git diff
 3. Perform a review based on style and code review guidelines
 4. Provide detailed review results and improvement suggestions
+
+### GitHub PR Review
+
+In the Cursor chat window, enter the following command:
+
+```
+code review
+https://github.com/owner/repo/pull/123
+
+After generating the review report, please:
+
+1.  Add PR summary comment
+2.  Use **line comments** directly within the provided code to suggest specific improvements.
+```
+
+This will fetch the PR's diff and provide a code review.
 
 ## Review Guidelines
 
