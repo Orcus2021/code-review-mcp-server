@@ -1,6 +1,5 @@
 import { z } from "zod";
 import dotenv from "dotenv";
-import { execSync } from "child_process";
 
 import { getNotionContent } from "../utils/getNotionContent.js";
 import { getInstructions } from "../utils/getInstructions.js";
