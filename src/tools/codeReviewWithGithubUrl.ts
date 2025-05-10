@@ -8,7 +8,7 @@ import {
   createResponse,
   createErrorResponse,
 } from "../utils/createResponse.js";
-import { formatDiffWithLineNumbers } from "../utils/getGitHandler.js";
+import { formatDiffWithLineNumbers } from "../utils/formatDiff.js";
 import { getGitHubPRDiff } from "../utils/getGithubHandler.js";
 
 import {
