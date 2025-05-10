@@ -8,10 +8,8 @@ import {
   createResponse,
   createErrorResponse,
 } from "../utils/createResponse.js";
-import {
-  formatDiffWithLineNumbers,
-  getGitHubPRDiff,
-} from "../utils/getGitHandler.js";
+import { formatDiffWithLineNumbers } from "../utils/getGitHandler.js";
+import { getGitHubPRDiff } from "../utils/getGithubHandler.js";
 
 import {
   STYLE_GUIDELINE_PROMPT,
