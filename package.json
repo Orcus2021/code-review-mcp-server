@@ -34,7 +34,8 @@
   "files": [
     "dist",
     "README.md",
-    ".env.example"
+    ".env.example",
+    "doc"
   ],
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.4.1",

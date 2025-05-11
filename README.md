@@ -117,6 +117,12 @@ After generating the review report, please:
 
 This will fetch the PR's diff, provide a code review, and leave PR comments directly on GitHub.
 
+### CI Integration for Automated Code Review
+
+You can automate code review in your CI pipeline by triggering an n8n webhook, which will call this project's MCP tool to perform the review and return results or leave comments on your PR.
+
+For a step-by-step guide and recommended workflow diagram, see: [CI Integration with n8n and MCP Tool](./doc/ci-n8n-mcp-integration.md)
+
 ## Review Guidelines
 
 This tool provides two default sets of guidelines:
