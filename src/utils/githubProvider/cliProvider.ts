@@ -1,9 +1,9 @@
-import { execSync } from "child_process";
-import { BaseGitHubDiffProvider } from "./baseProvider.js";
-import { getPRNumberFromUrl, getRepoInfoFromUrl } from "../parseGithubUrl.js";
-import { formatGitDiffOutput } from "../formatDiff.js";
-import { formatComment } from "../formatComment.js";
-import type { GitHubFileChange } from "../../types/githubProvider.js";
+import { execSync } from 'child_process';
+import { BaseGitHubDiffProvider } from './baseProvider.js';
+import { getPRNumberFromUrl, getRepoInfoFromUrl } from '../parseGithubUrl.js';
+import { formatGitDiffOutput } from '../formatDiff.js';
+import { formatComment } from '../formatComment.js';
+import type { GitHubFileChange } from '../../types/githubProvider.js';
 
 /**
  * CLI implementation of GitHub Diff Provider
@@ -16,12 +16,12 @@ export class CliGitHubDiffProvider extends BaseGitHubDiffProvider {
   protected async getFilesList(prUrl: string): Promise<GitHubFileChange[]> {
     try {
       const filesJson = execSync(
-        `gh pr view ${prUrl} --json files --jq '.files | map({ path: .path, changes: (.additions + .deletions) })'`
+        `gh pr view ${prUrl} --json files --jq '.files | map({ path: .path, changes: (.additions + .deletions) })'`,
       ).toString();
 
       return JSON.parse(filesJson) as GitHubFileChange[];
     } catch (error) {
-      console.error("Error fetching PR files:", error);
+      console.error('Error fetching PR files:', error);
       throw error;
     }
   }
@@ -33,7 +33,7 @@ export class CliGitHubDiffProvider extends BaseGitHubDiffProvider {
     try {
       return execSync(`gh pr diff ${prUrl}`).toString();
     } catch (error) {
-      console.error("Error fetching full diff:", error);
+      console.error('Error fetching full diff:', error);
       throw error;
     }
   }
@@ -41,28 +41,25 @@ export class CliGitHubDiffProvider extends BaseGitHubDiffProvider {
   /**
    * Use gh CLI to get diff for normal-sized files
    */
-  protected async getNormalFilesDiff(
-    prUrl: string,
-    files: GitHubFileChange[]
-  ): Promise<string> {
+  protected async getNormalFilesDiff(prUrl: string, files: GitHubFileChange[]): Promise<string> {
     try {
       const { owner, repo } = getRepoInfoFromUrl(prUrl);
       const prNumber = getPRNumberFromUrl(prUrl);
-      let combinedDiff = "";
+      let combinedDiff = '';
 
       for (const file of files) {
         const patch = execSync(
-          `gh api repos/${owner}/${repo}/pulls/${prNumber}/files --jq '.[] | select(.filename == "${file.path}") | .patch'`
+          `gh api repos/${owner}/${repo}/pulls/${prNumber}/files --jq '.[] | select(.filename == "${file.path}") | .patch'`,
         ).toString();
 
-        if (patch && patch.trim() !== "") {
+        if (patch && patch.trim() !== '') {
           combinedDiff += formatGitDiffOutput(file.path, patch);
         }
       }
 
       return combinedDiff;
     } catch (error) {
-      console.error("Error fetching normal files diff:", error);
+      console.error('Error fetching normal files diff:', error);
       throw error;
     }
   }
@@ -84,14 +81,14 @@ export class CliGitHubDiffProvider extends BaseGitHubDiffProvider {
 
       // Use gh api to add comment
       execSync(
-        `gh api -X POST -F body="${formattedComment}" /repos/${owner}/${repo}/issues/${prNumber}/comments`
+        `gh api -X POST -F body="${formattedComment}" /repos/${owner}/${repo}/issues/${prNumber}/comments`,
       );
 
-      return "Comment added successfully";
+      return 'Comment added successfully';
     } catch (error) {
       console.error(
-        "Error adding PR comment:",
-        error instanceof Error ? error.message : String(error)
+        'Error adding PR comment:',
+        error instanceof Error ? error.message : String(error),
       );
       throw error;
     }
@@ -114,9 +111,7 @@ export class CliGitHubDiffProvider extends BaseGitHubDiffProvider {
     try {
       const { owner, repo } = getRepoInfoFromUrl(prUrl);
       const prNumber = getPRNumberFromUrl(prUrl);
-      const commitId = execSync(
-        `gh api repos/${owner}/${repo}/pulls/${prNumber} --jq '.head.sha'`
-      )
+      const commitId = execSync(`gh api repos/${owner}/${repo}/pulls/${prNumber} --jq '.head.sha'`)
         .toString()
         .trim();
 
@@ -131,14 +126,14 @@ export class CliGitHubDiffProvider extends BaseGitHubDiffProvider {
 
       // Use gh api to add line comment
       execSync(
-        `gh api -X POST -H "Content-Type: application/json" --input - /repos/${owner}/${repo}/pulls/${prNumber}/comments <<< '${jsonParams}'`
+        `gh api -X POST -H "Content-Type: application/json" --input - /repos/${owner}/${repo}/pulls/${prNumber}/comments <<< '${jsonParams}'`,
       );
 
-      return "Line comment added successfully";
+      return 'Line comment added successfully';
     } catch (error) {
       console.error(
-        "Error adding PR line comment:",
-        error instanceof Error ? error.message : String(error)
+        'Error adding PR line comment:',
+        error instanceof Error ? error.message : String(error),
       );
       throw error;
     }

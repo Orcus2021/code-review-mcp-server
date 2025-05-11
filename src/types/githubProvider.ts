@@ -1,4 +1,4 @@
-import type { ValidationResult } from "./validationResult.js";
+import type { ValidationResult } from './validationResult.js';
 
 /**
  * GitHub file change info
@@ -24,7 +24,13 @@ export interface GitHubProvider {
    * @param prUrl PR URL
    * @param commentMessage Comment content
    */
-  addPRSummaryComment({prUrl, commentMessage}: {prUrl: string, commentMessage: string}): Promise<ValidationResult<string>>;
+  addPRSummaryComment({
+    prUrl,
+    commentMessage,
+  }: {
+    prUrl: string;
+    commentMessage: string;
+  }): Promise<ValidationResult<string>>;
 
   /**
    * Add comment to a specific line in PR
@@ -33,5 +39,15 @@ export interface GitHubProvider {
    * @param line Line number
    * @param commentMessage Comment content
    */
-  addPRLineComment({prUrl, filePath, line, commentMessage}: {prUrl: string, filePath: string, line: number, commentMessage: string}): Promise<ValidationResult<string>>;
-} 
+  addPRLineComment({
+    prUrl,
+    filePath,
+    line,
+    commentMessage,
+  }: {
+    prUrl: string;
+    filePath: string;
+    line: number;
+    commentMessage: string;
+  }): Promise<ValidationResult<string>>;
+}
