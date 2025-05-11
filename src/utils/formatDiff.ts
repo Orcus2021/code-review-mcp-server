@@ -40,3 +40,12 @@ export function formatDiffWithLineNumbers(diffContent: string): string {
 
   return formattedLines.join("\n");
 }
+
+export function formatGitDiffOutput(filePath: string, patch: string): string {
+  let formattedDiff = `diff --git a/${filePath} b/${filePath}\n`;
+  formattedDiff += patch;
+  if (!patch.endsWith("\n")) {
+    formattedDiff += "\n";
+  }
+  return formattedDiff;
+}
