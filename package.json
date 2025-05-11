@@ -14,7 +14,9 @@
     "build:rollup": "rm -rf dist && rollup -c",
     "start-inspector": "npx @modelcontextprotocol/inspector node $(node ./scripts/getDistPath.js)",
     "type-check": "tsc --noEmit",
-    "release": "npm run build && npm publish"
+    "release": "npm run build && npm publish",
+    "format": "prettier --write \"src/**/*.{js,jsx,ts,tsx,json,css,scss,md}\"",
+    "format:check": "prettier --check \"src/**/*.{js,jsx,ts,tsx,json,css,scss,md}\""
   },
   "keywords": [
     "code-review",
@@ -49,6 +51,7 @@
     "@rollup/plugin-terser": "^0.4.4",
     "@rollup/plugin-typescript": "^11.1.6",
     "@types/node": "^22.15.17",
+    "prettier": "^3.5.3",
     "rollup": "^4.36.0",
     "tslib": "^2.6.2",
     "typescript": "^5.8.3"
