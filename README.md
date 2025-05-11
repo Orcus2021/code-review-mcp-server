@@ -1,6 +1,6 @@
-# Code Review MCP Tool for Cursor
+# Code Review MCP Tool
 
-This tool is a Cursor plugin based on the Model Context Protocol (MCP) that automatically generates git diffs and performs code reviews within Cursor.
+This tool is a Model Context Protocol (MCP) server that provides automated code review and leaves GitHub PR comments for any app that supports MCP integration.
 
 ## Features
 
@@ -12,36 +12,27 @@ This tool is a Cursor plugin based on the Model Context Protocol (MCP) that auto
 - Support Notion integration to retrieve review guidelines from Notion code blocks, with default guidelines as fallback
 - Include pre-configured style and code review guidelines
 
+## Architecture
+
+- **MCP Server**: Listens for code review requests from any MCP-compatible client app.
+- **Git Integration**: Uses local git or GitHub PRs to generate diffs.
+- **Notion Integration**: Fetches review guidelines from Notion code blocks if configured.
+- **Automated Review**: Analyzes code diffs and generates review comments and suggestions.
+
 ## Prerequisites
 
-### GitHub CLI Installation
+- Node.js (v18 or above recommended)
+- Git installed on your system
+- For GitHub PR review, you must provide either:
+  - a `GITHUB_TOKEN` environment variable (to use the GitHub RESTful API), **or**
+  - have the GitHub CLI (`gh`) installed and authenticated
+- (Optional) Notion API token for guideline integration
 
-This tool requires the GitHub CLI to be installed globally on your machine:
+## MCP Configuration
 
-```bash
-# MacOS
-brew install gh
+To use this tool in any app that supports MCP, follow these steps:
 
-# Windows
-winget install -e --id GitHub.cli
-
-# Linux
-sudo apt install gh  # Debian/Ubuntu
-```
-
-After installation, authenticate with your GitHub account:
-
-```bash
-gh auth login
-```
-
-For more installation options, visit the [GitHub CLI documentation](https://cli.github.com/manual/installation).
-
-## Cursor Configuration
-
-To use this tool in Cursor, you need to add the following configuration to your Cursor settings:
-
-1. Open Cursor settings (typically located at `~/.cursor/config.json`)
+1. Open the configuration file for your MCP-supported app.
 2. Add the following configuration:
 
 ```json
@@ -51,6 +42,7 @@ To use this tool in Cursor, you need to add the following configuration to your 
       "command": "npx",
       "args": ["-y", "code-review-mcp-server"],
       "env": {
+        "GITHUB_TOKEN": "github_token",
         "NOTION_API_KEY": "notion_api_key",
         "NOTION_CODE_REVIEW_GUIDELINE_CODE_BLOCK_URL": "notion_code_block_url_here",
         "NOTION_STYLE_GUIDELINE_CODE_BLOCK_URL": "notion_code_block_url_here"
@@ -59,8 +51,6 @@ To use this tool in Cursor, you need to add the following configuration to your 
   }
 }
 ```
-
-Reference documentation: [Cursor Model Context Protocol](https://docs.cursor.com/context/model-context-protocol)
 
 ## Notion Integration Setup
 
@@ -82,7 +72,7 @@ NOTION_CODE_REVIEW_GUIDELINE_CODE_BLOCK_URL=your_notion_code_block_url
 NOTION_STYLE_GUIDELINE_CODE_BLOCK_URL=your_notion_style_guideline_url
 ```
 
-These can be provided in the `env` section of your Cursor configuration as shown above.
+These can be provided in the `env` section of your MCP configuration as shown above.
 
 ### 3. Add Integration to Notion Page
 
@@ -97,7 +87,7 @@ For detailed instructions, refer to: [Notion API Connections Guide](https://www.
 
 ### Local Git Branch Review
 
-In the Cursor chat window, enter the following command:
+In your MCP-compatible app, send the following command:
 
 ```
 code review
@@ -113,7 +103,7 @@ This will:
 
 ### GitHub PR Review
 
-In the Cursor chat window, enter the following command:
+In your MCP-compatible app, send the following command:
 
 ```
 code review
@@ -125,7 +115,7 @@ After generating the review report, please:
 2.  Use **line comments** directly within the provided code to suggest specific improvements.
 ```
 
-This will fetch the PR's diff and provide a code review.
+This will fetch the PR's diff, provide a code review, and leave PR comments directly on GitHub.
 
 ## Review Guidelines
 
