@@ -40,10 +40,11 @@ function addSummaryCommentToPR(
     const prNumber = getPRNumberFromUrl(url);
     const { owner, repo } = getRepoInfoFromUrl(url);
 
-    // Escape quotes and backticks in comment message
+    // Escape quotes, backticks, and $ in comment message
     const escapedComment = commentMessage
       .replace(/"/g, '\\"')
-      .replace(/`/g, "\\`");
+      .replace(/`/g, "\\`")
+      .replace(/\$/g, "\\$");
 
     // Use gh api to add comment
     execSync(
