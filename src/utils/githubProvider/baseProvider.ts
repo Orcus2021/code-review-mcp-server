@@ -1,5 +1,8 @@
 import type { ValidationResult } from "../../types/validationResult.js";
-import type { GitHubProvider, GitHubFileChange } from "../../types/githubProvider.js";
+import type {
+  GitHubProvider,
+  GitHubFileChange,
+} from "../../types/githubProvider.js";
 
 /**
  * Base abstract class for GitHub Diff Provider
@@ -39,6 +42,83 @@ export abstract class BaseGitHubDiffProvider implements GitHubProvider {
       return {
         isValid: false,
         errorMessage: `Error occurred while getting PR diff: ${
+          error instanceof Error ? error.message : String(error)
+        }`,
+      };
+    }
+  }
+
+  /**
+   * Add summary comment in PR
+   * Template method defines the process
+   */
+  async addPRSummaryComment({
+    prUrl,
+    commentMessage,
+  }: {
+    prUrl: string;
+    commentMessage: string;
+  }): Promise<ValidationResult<string>> {
+    try {
+      if (!this.isValidGitHubPrUrl(prUrl)) {
+        return {
+          isValid: false,
+          errorMessage: "Invalid GitHub PR URL",
+        };
+      }
+
+      const result = await this.postPRSummaryComment({ prUrl, commentMessage });
+      return {
+        isValid: true,
+        data: result,
+      };
+    } catch (error) {
+      return {
+        isValid: false,
+        errorMessage: `Error occurred while adding PR comment: ${
+          error instanceof Error ? error.message : String(error)
+        }`,
+      };
+    }
+  }
+
+  /**
+   * Add comment to a specific line in PR
+   * Template method defines the process
+   */
+  async addPRLineComment({
+    prUrl,
+    filePath,
+    line,
+    commentMessage,
+  }: {
+    prUrl: string;
+    filePath: string;
+    line: number;
+    commentMessage: string;
+  }): Promise<ValidationResult<string>> {
+    try {
+      if (!this.isValidGitHubPrUrl(prUrl)) {
+        return {
+          isValid: false,
+          errorMessage: "Invalid GitHub PR URL",
+        };
+      }
+
+      const result = await this.postPRLineComment({
+        prUrl,
+        filePath,
+        line,
+        commentMessage,
+      });
+      return {
+        isValid: true,
+        data: result,
+      };
+    } catch (error) {
+      return {
+        isValid: false,
+        errorMessage: `Error occurred while adding PR line comment: ${
           error instanceof Error ? error.message : String(error)
         }`,
       };
@@ -117,4 +197,32 @@ export abstract class BaseGitHubDiffProvider implements GitHubProvider {
     prUrl: string,
     files: GitHubFileChange[]
   ): Promise<string>;
-} 
+
+  /**
+   * Abstract method: add PR summary comment
+   * Implemented by subclass
+   */
+  protected abstract postPRSummaryComment({
+    prUrl,
+    commentMessage,
+  }: {
+    prUrl: string;
+    commentMessage: string;
+  }): Promise<string>;
+
+  /**
+   * Abstract method: add PR line comment
+   * Implemented by subclass
+   */
+  protected abstract postPRLineComment({
+    prUrl,
+    filePath,
+    line,
+    commentMessage,
+  }: {
+    prUrl: string;
+    filePath: string;
+    line: number;
+    commentMessage: string;
+  }): Promise<string>;
+}
