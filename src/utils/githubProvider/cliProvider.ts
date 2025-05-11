@@ -2,6 +2,7 @@ import { execSync } from "child_process";
 import { BaseGitHubDiffProvider } from "./baseProvider.js";
 import { getPRNumberFromUrl, getRepoInfoFromUrl } from "../parseGithubUrl.js";
 import { formatGitDiffOutput } from "../formatDiff.js";
+import { formatComment } from "../formatComment.js";
 import type { GitHubFileChange } from "../../types/githubProvider.js";
 
 /**
@@ -17,7 +18,7 @@ export class CliGitHubDiffProvider extends BaseGitHubDiffProvider {
       const filesJson = execSync(
         `gh pr view ${prUrl} --json files --jq '.files | map({ path: .path, changes: (.additions + .deletions) })'`
       ).toString();
-      
+
       return JSON.parse(filesJson) as GitHubFileChange[];
     } catch (error) {
       console.error("Error fetching PR files:", error);
@@ -65,4 +66,81 @@ export class CliGitHubDiffProvider extends BaseGitHubDiffProvider {
       throw error;
     }
   }
-} 
+
+  /**
+   * Use gh CLI to add PR summary comment
+   */
+  protected async postPRSummaryComment({
+    prUrl,
+    commentMessage,
+  }: {
+    prUrl: string;
+    commentMessage: string;
+  }): Promise<string> {
+    try {
+      const { owner, repo } = getRepoInfoFromUrl(prUrl);
+      const prNumber = getPRNumberFromUrl(prUrl);
+      const formattedComment = formatComment(commentMessage);
+
+      // Use gh api to add comment
+      execSync(
+        `gh api -X POST -F body="${formattedComment}" /repos/${owner}/${repo}/issues/${prNumber}/comments`
+      );
+
+      return "Comment added successfully";
+    } catch (error) {
+      console.error(
+        "Error adding PR comment:",
+        error instanceof Error ? error.message : String(error)
+      );
+      throw error;
+    }
+  }
+
+  /**
+   * Use gh CLI to add PR line comment
+   */
+  protected async postPRLineComment({
+    prUrl,
+    filePath,
+    line,
+    commentMessage,
+  }: {
+    prUrl: string;
+    filePath: string;
+    line: number;
+    commentMessage: string;
+  }): Promise<string> {
+    try {
+      const { owner, repo } = getRepoInfoFromUrl(prUrl);
+      const prNumber = getPRNumberFromUrl(prUrl);
+      const commitId = execSync(
+        `gh api repos/${owner}/${repo}/pulls/${prNumber} --jq '.head.sha'`
+      )
+        .toString()
+        .trim();
+
+      const formattedComment = formatComment(commentMessage);
+      const jsonParams = `{
+        "body": "${formattedComment}",
+        "commit_id": "${commitId}",
+        "path": "${filePath}",
+        "line": ${line},
+        "side": "RIGHT"
+      }`;
+
+      // Use gh api to add line comment
+      execSync(
+        `gh api -X POST -H "Content-Type: application/json" --input - /repos/${owner}/${repo}/pulls/${prNumber}/comments <<< '${jsonParams}'`
+      );
+
+      return "Line comment added successfully";
+    } catch (error) {
+      console.error(
+        "Error adding PR line comment:",
+        error instanceof Error ? error.message : String(error)
+      );
+      throw error;
+    }
+  }
+}
