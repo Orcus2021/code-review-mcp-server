@@ -3,6 +3,7 @@ import { BaseGitHubDiffProvider } from "./baseProvider.js";
 import { getPRNumberFromUrl, getRepoInfoFromUrl } from "../parseGithubUrl.js";
 import { formatGitDiffOutput } from "../formatDiff.js";
 import type { GitHubFileChange } from "../../types/githubProvider.js";
+import { addPrefixForComment } from "../formatComment.js";
 
 interface GraphQLResponse {
   repository: {
@@ -135,6 +136,64 @@ export class RestfulGitHubDiffProvider extends BaseGitHubDiffProvider {
       return combinedDiff;
     } catch (error) {
       console.error("Error fetching normal files diff:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Use REST API to add PR summary comment
+   */
+  protected async postPRSummaryComment({prUrl, commentMessage}: {prUrl: string, commentMessage: string}): Promise<string> {
+    try {
+      const { owner, repo } = getRepoInfoFromUrl(prUrl);
+      const prNumber = getPRNumberFromUrl(prUrl);
+      const formattedComment = addPrefixForComment(commentMessage);
+
+      await this.octokit.issues.createComment({
+        owner,
+        repo,
+        issue_number: Number(prNumber),
+        body: formattedComment
+      });
+      
+      return "Comment added successfully";
+    } catch (error) {
+      console.error("Error adding PR comment:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Use REST API to add PR line comment
+   */
+  protected async postPRLineComment({prUrl, filePath, line, commentMessage}: {prUrl: string, filePath: string, line: number, commentMessage: string}): Promise<string> {
+    try {
+      const { owner, repo } = getRepoInfoFromUrl(prUrl);
+      const prNumber = getPRNumberFromUrl(prUrl);
+      
+      const { data: pr } = await this.octokit.pulls.get({
+        owner,
+        repo,
+        pull_number: Number(prNumber)
+      });
+      
+      const commitId = pr.head.sha;
+      const formattedComment = addPrefixForComment(commentMessage);
+
+      await this.octokit.pulls.createReviewComment({
+        owner,
+        repo,
+        pull_number: Number(prNumber),
+        body: formattedComment,
+        commit_id: commitId,
+        path: filePath,
+        line: line,
+        side: 'RIGHT'
+      });
+      
+      return "Line comment added successfully";
+    } catch (error) {
+      console.error("Error adding PR line comment:", error instanceof Error ? error.message : String(error));
       throw error;
     }
   }
