@@ -1,11 +1,11 @@
 import type { ValidationResult } from "../../types/validationResult.js";
-import type { GitHubDiffProvider, GitHubFileChange } from "../../types/githubDiffProvider.js";
+import type { GitHubProvider, GitHubFileChange } from "../../types/githubProvider.js";
 
 /**
  * Base abstract class for GitHub Diff Provider
  * Implements template method pattern, defining standard process while subclasses implement specific steps
  */
-export abstract class BaseGitHubDiffProvider implements GitHubDiffProvider {
+export abstract class BaseGitHubDiffProvider implements GitHubProvider {
   protected readonly LARGE_FILE_THRESHOLD = 1000;
 
   /**

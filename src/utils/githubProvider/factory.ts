@@ -1,12 +1,12 @@
 import dotenv from "dotenv";
 import { CliGitHubDiffProvider } from "./cliProvider.js";
 import { RestfulGitHubDiffProvider } from "./restfulProvider.js";
-import type { GitHubDiffProvider } from "../../types/githubDiffProvider.js";
+import type { GitHubProvider } from "../../types/githubProvider.js";
 import type { ValidationResult } from "../../types/validationResult.js";
 
 dotenv.config();
 
-function createGitHubDiffProvider(): GitHubDiffProvider {
+function createGitHubDiffProvider(): GitHubProvider {
   const githubToken = process.env.GITHUB_TOKEN;
   
   if (githubToken) {

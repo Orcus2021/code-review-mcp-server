@@ -2,7 +2,7 @@ import { execSync } from "child_process";
 import { BaseGitHubDiffProvider } from "./baseProvider.js";
 import { getPRNumberFromUrl, getRepoInfoFromUrl } from "../parseGithubUrl.js";
 import { formatGitDiffOutput } from "../formatDiff.js";
-import type { GitHubFileChange } from "../../types/githubDiffProvider.js";
+import type { GitHubFileChange } from "../../types/githubProvider.js";
 
 /**
  * CLI implementation of GitHub Diff Provider

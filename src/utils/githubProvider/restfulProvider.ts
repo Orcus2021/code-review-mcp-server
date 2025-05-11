@@ -2,7 +2,7 @@ import { Octokit } from "@octokit/rest";
 import { BaseGitHubDiffProvider } from "./baseProvider.js";
 import { getPRNumberFromUrl, getRepoInfoFromUrl } from "../parseGithubUrl.js";
 import { formatGitDiffOutput } from "../formatDiff.js";
-import type { GitHubFileChange } from "../../types/githubDiffProvider.js";
+import type { GitHubFileChange } from "../../types/githubProvider.js";
 
 interface GraphQLResponse {
   repository: {
