@@ -8,10 +8,8 @@ import {
   createResponse,
   createErrorResponse,
 } from "../utils/createResponse.js";
-import {
-  formatDiffWithLineNumbers,
-  getGitHubPRDiff,
-} from "../utils/getGitHandler.js";
+import { formatDiffWithLineNumbers } from "../utils/formatDiff.js";
+import { getGitHubPRDiff } from "../utils/githubProvider/index.js";
 
 import {
   STYLE_GUIDELINE_PROMPT,
@@ -53,10 +51,10 @@ export async function runCodeReviewWithGithubUrlTool(
     );
   }
 
-  // Get diff from GitHub PR
-  const diffResult = getGitHubPRDiff(url);
+  // Get diff from GitHub PR using the new provider
+  const diffResult = await getGitHubPRDiff(url);
   if (!diffResult.isValid) {
-    return createErrorResponse(diffResult.errorMessage!);
+    return createErrorResponse(diffResult.errorMessage);
   }
 
   const styleGuideline = await getPromptOrFallback({
@@ -75,7 +73,7 @@ export async function runCodeReviewWithGithubUrlTool(
     styleGuideline,
     codeReviewGuideline,
   });
-  const diff = formatDiffWithLineNumbers(diffResult.data!);
+  const diff = formatDiffWithLineNumbers(diffResult.data);
   const message = `GitHub PR Diff Output:\n${diff}\n\nReview Instructions:\n${instructions}`;
 
   return createResponse(message);
