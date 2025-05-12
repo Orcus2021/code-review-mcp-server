@@ -4,7 +4,7 @@
  * @returns Formatted diff with line numbers
  */
 export function formatDiffWithLineNumbers(diffContent: string): string {
-  const lines = diffContent.split("\n");
+  const lines = diffContent.split('\n');
   let lineNumberOld = 0;
   let lineNumberNew = 0;
 
@@ -21,13 +21,13 @@ export function formatDiffWithLineNumbers(diffContent: string): string {
     }
 
     // Handle normal diff lines
-    if (line.startsWith("-")) {
+    if (line.startsWith('-')) {
       lineNumberOld++;
       return `Line: ${lineNumberOld} ${line}`;
-    } else if (line.startsWith("+")) {
+    } else if (line.startsWith('+')) {
       lineNumberNew++;
       return `Line: ${lineNumberNew} ${line}`;
-    } else if (line.startsWith(" ")) {
+    } else if (line.startsWith(' ')) {
       // Context lines (unchanged)
       lineNumberOld++;
       lineNumberNew++;
@@ -38,14 +38,14 @@ export function formatDiffWithLineNumbers(diffContent: string): string {
     return line;
   });
 
-  return formattedLines.join("\n");
+  return formattedLines.join('\n');
 }
 
 export function formatGitDiffOutput(filePath: string, patch: string): string {
   let formattedDiff = `diff --git a/${filePath} b/${filePath}\n`;
   formattedDiff += patch;
-  if (!patch.endsWith("\n")) {
-    formattedDiff += "\n";
+  if (!patch.endsWith('\n')) {
+    formattedDiff += '\n';
   }
   return formattedDiff;
 }

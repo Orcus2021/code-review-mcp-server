@@ -1,8 +1,5 @@
-import type { ValidationResult } from "../../types/validationResult.js";
-import type {
-  GitHubProvider,
-  GitHubFileChange,
-} from "../../types/githubProvider.js";
+import type { ValidationResult } from '../../types/validationResult.js';
+import type { GitHubProvider, GitHubFileChange } from '../../types/githubProvider.js';
 
 /**
  * Base abstract class for GitHub Diff Provider
@@ -20,17 +17,17 @@ export abstract class BaseGitHubDiffProvider implements GitHubProvider {
       if (!this.isValidGitHubPrUrl(prUrl)) {
         return {
           isValid: false,
-          errorMessage: "Invalid GitHub PR URL",
+          errorMessage: 'Invalid GitHub PR URL',
         };
       }
 
       const files = await this.getFilesList(prUrl);
       const diff = await this.generateDiff(prUrl, files);
 
-      if (!diff || diff.trim() === "") {
+      if (!diff || diff.trim() === '') {
         return {
           isValid: false,
-          errorMessage: "No differences found in PR or invalid PR URL",
+          errorMessage: 'No differences found in PR or invalid PR URL',
         };
       }
 
@@ -63,7 +60,7 @@ export abstract class BaseGitHubDiffProvider implements GitHubProvider {
       if (!this.isValidGitHubPrUrl(prUrl)) {
         return {
           isValid: false,
-          errorMessage: "Invalid GitHub PR URL",
+          errorMessage: 'Invalid GitHub PR URL',
         };
       }
 
@@ -101,7 +98,7 @@ export abstract class BaseGitHubDiffProvider implements GitHubProvider {
       if (!this.isValidGitHubPrUrl(prUrl)) {
         return {
           isValid: false,
-          errorMessage: "Invalid GitHub PR URL",
+          errorMessage: 'Invalid GitHub PR URL',
         };
       }
 
@@ -137,14 +134,9 @@ export abstract class BaseGitHubDiffProvider implements GitHubProvider {
    * Generate diff content
    * Handle large files and standard files
    */
-  protected async generateDiff(
-    prUrl: string,
-    files: GitHubFileChange[]
-  ): Promise<string> {
+  protected async generateDiff(prUrl: string, files: GitHubFileChange[]): Promise<string> {
     // Check if there are any large files (changes exceeding threshold)
-    const hasLargeFile = files.some(
-      (file) => file.changes > this.LARGE_FILE_THRESHOLD
-    );
+    const hasLargeFile = files.some((file) => file.changes > this.LARGE_FILE_THRESHOLD);
 
     if (!hasLargeFile) {
       // If no large files, use fast method to get complete diff
@@ -152,18 +144,14 @@ export abstract class BaseGitHubDiffProvider implements GitHubProvider {
     }
 
     // Handle cases with large files: classify files into large and normal files
-    const largeFiles = files.filter(
-      (file) => file.changes > this.LARGE_FILE_THRESHOLD
-    );
-    const normalFiles = files.filter(
-      (file) => file.changes <= this.LARGE_FILE_THRESHOLD
-    );
+    const largeFiles = files.filter((file) => file.changes > this.LARGE_FILE_THRESHOLD);
+    const normalFiles = files.filter((file) => file.changes <= this.LARGE_FILE_THRESHOLD);
 
-    let combinedDiff = "";
+    let combinedDiff = '';
 
     // Handle large files
     if (largeFiles.length > 0) {
-      combinedDiff += "Large files (changes > 1000) that were skipped:\n";
+      combinedDiff += 'Large files (changes > 1000) that were skipped:\n';
       largeFiles.forEach((file) => {
         combinedDiff += `diff --git a/${file.path} b/${file.path}\n`;
         combinedDiff += `@@ File too large to display (${file.changes} changes) @@\n\n`;
@@ -193,10 +181,7 @@ export abstract class BaseGitHubDiffProvider implements GitHubProvider {
    * Abstract method: Get diff for normal-sized files
    * To be implemented by subclasses
    */
-  protected abstract getNormalFilesDiff(
-    prUrl: string,
-    files: GitHubFileChange[]
-  ): Promise<string>;
+  protected abstract getNormalFilesDiff(prUrl: string, files: GitHubFileChange[]): Promise<string>;
 
   /**
    * Abstract method: add PR summary comment

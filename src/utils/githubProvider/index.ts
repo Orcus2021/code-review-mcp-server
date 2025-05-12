@@ -1,1 +1,1 @@
-export { getGitHubPRDiff, addPRSummaryComment, addPRLineComment } from "./factory.js";
+export { getGitHubPRDiff, addPRSummaryComment, addPRLineComment } from './factory.js';

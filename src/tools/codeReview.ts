@@ -1,24 +1,21 @@
-import { z } from "zod";
-import dotenv from "dotenv";
+import { z } from 'zod';
+import dotenv from 'dotenv';
 
 import {
   validateCurrentBranch,
   validateBaseBranch,
   performGitDiff,
-} from "../utils/getGitHandler.js";
-import { getNotionContent } from "../utils/getNotionContent.js";
-import { getInstructions } from "../utils/getInstructions.js";
-import { getPromptOrFallback } from "../utils/getPromptOrFallback.js";
-import {
-  createResponse,
-  createErrorResponse,
-} from "../utils/createResponse.js";
+} from '../utils/getGitHandler.js';
+import { getNotionContent } from '../utils/getNotionContent.js';
+import { getInstructions } from '../utils/getInstructions.js';
+import { getPromptOrFallback } from '../utils/getPromptOrFallback.js';
+import { createResponse, createErrorResponse } from '../utils/createResponse.js';
 
 import {
   STYLE_GUIDELINE_PROMPT,
   CODE_REVIEW_GUIDELINE_PROMPT,
-} from "../constants/guidelinePrompt.js";
-import type { ToolResponse } from "../utils/createResponse.js";
+} from '../constants/guidelinePrompt.js';
+import type { ToolResponse } from '../utils/createResponse.js';
 
 dotenv.config();
 
@@ -27,13 +24,13 @@ dotenv.config();
  * - Returns the diff along with instructions to review and fix issues
  */
 
-export const codeReviewToolName = "codeReview";
+export const codeReviewToolName = 'codeReview';
 export const codeReviewToolDescription =
-  "Run a git diff between branches. Requires a base branch name to compare against the current branch, and provide instructions to review/fix issues.";
+  'Run a git diff between branches. Requires a base branch name to compare against the current branch, and provide instructions to review/fix issues.';
 
 export const CodeReviewToolSchema = z.object({
-  folderPath: z.string().min(1, "A folder path is required."),
-  baseBranch: z.string().min(1, "A base branch name is required."),
+  folderPath: z.string().min(1, 'A folder path is required.'),
+  baseBranch: z.string().min(1, 'A base branch name is required.'),
 });
 
 type CodeReviewArgs = z.infer<typeof CodeReviewToolSchema>;
@@ -41,15 +38,13 @@ type CodeReviewArgs = z.infer<typeof CodeReviewToolSchema>;
 /**
  * Main function to run the git branch diff tool
  */
-export async function runCodeReviewTool(
-  args: CodeReviewArgs
-): Promise<ToolResponse> {
+export async function runCodeReviewTool(args: CodeReviewArgs): Promise<ToolResponse> {
   const { folderPath, baseBranch } = args;
 
   // Validate required parameters
   if (!baseBranch) {
     return createErrorResponse(
-      "Please provide a base branch name using the 'baseBranch' parameter. This is required to perform a git diff operation."
+      "Please provide a base branch name using the 'baseBranch' parameter. This is required to perform a git diff operation.",
     );
   }
 
@@ -66,11 +61,7 @@ export async function runCodeReviewTool(
   }
 
   // Perform git diff
-  const diffResult = performGitDiff(
-    folderPath,
-    baseBranchResult.data!,
-    currentBranchResult.data!
-  );
+  const diffResult = performGitDiff(folderPath, baseBranchResult.data!, currentBranchResult.data!);
   if (!diffResult.isValid) {
     return createErrorResponse(diffResult.errorMessage!);
   }

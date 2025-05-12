@@ -1,9 +1,9 @@
-import { Octokit } from "@octokit/rest";
-import { BaseGitHubDiffProvider } from "./baseProvider.js";
-import { getPRNumberFromUrl, getRepoInfoFromUrl } from "../parseGithubUrl.js";
-import { formatGitDiffOutput } from "../formatDiff.js";
-import type { GitHubFileChange } from "../../types/githubProvider.js";
-import { addPrefixForComment } from "../formatComment.js";
+import { Octokit } from '@octokit/rest';
+import { BaseGitHubDiffProvider } from './baseProvider.js';
+import { getPRNumberFromUrl, getRepoInfoFromUrl } from '../parseGithubUrl.js';
+import { formatGitDiffOutput } from '../formatDiff.js';
+import type { GitHubFileChange } from '../../types/githubProvider.js';
+import { addPrefixForComment } from '../formatComment.js';
 
 interface GraphQLResponse {
   repository: {
@@ -28,9 +28,9 @@ export class RestfulGitHubDiffProvider extends BaseGitHubDiffProvider {
 
   constructor(githubToken: string) {
     super();
-    
+
     if (!githubToken) {
-      throw new Error("GitHub token not provided");
+      throw new Error('GitHub token not provided');
     }
 
     this.octokit = new Octokit({ auth: githubToken });
@@ -63,17 +63,17 @@ export class RestfulGitHubDiffProvider extends BaseGitHubDiffProvider {
       const result = await this.octokit.graphql<GraphQLResponse>(query, {
         owner,
         repo,
-        prNumber: Number(prNumber)
+        prNumber: Number(prNumber),
       });
 
       const files = result.repository.pullRequest.files.nodes;
-      
+
       return files.map(({ path, additions, deletions }) => ({
         path,
-        changes: additions + deletions
+        changes: additions + deletions,
       }));
     } catch (error) {
-      console.error("Error fetching PR files:", error);
+      console.error('Error fetching PR files:', error);
       throw error;
     }
   }
@@ -86,22 +86,19 @@ export class RestfulGitHubDiffProvider extends BaseGitHubDiffProvider {
       const { owner, repo } = getRepoInfoFromUrl(prUrl);
       const prNumber = getPRNumberFromUrl(prUrl);
 
-      const response = await this.octokit.request(
-        `GET /repos/{owner}/{repo}/pulls/{pull_number}`,
-        {
-          owner,
-          repo,
-          pull_number: Number(prNumber),
-          headers: {
-            accept: "application/vnd.github.v3.diff"
-          }
-        }
-      );
+      const response = await this.octokit.request(`GET /repos/{owner}/{repo}/pulls/{pull_number}`, {
+        owner,
+        repo,
+        pull_number: Number(prNumber),
+        headers: {
+          accept: 'application/vnd.github.v3.diff',
+        },
+      });
 
       // When requesting with the diff media type, the response is a string
       return response.data as unknown as string;
     } catch (error) {
-      console.error("Error fetching full diff:", error);
+      console.error('Error fetching full diff:', error);
       throw error;
     }
   }
@@ -109,24 +106,21 @@ export class RestfulGitHubDiffProvider extends BaseGitHubDiffProvider {
   /**
    * Get the diff for normal-sized files using the REST API
    */
-  protected async getNormalFilesDiff(
-    prUrl: string,
-    files: GitHubFileChange[]
-  ): Promise<string> {
+  protected async getNormalFilesDiff(prUrl: string, files: GitHubFileChange[]): Promise<string> {
     try {
       const { owner, repo } = getRepoInfoFromUrl(prUrl);
       const prNumber = getPRNumberFromUrl(prUrl);
-      let combinedDiff = "";
+      let combinedDiff = '';
 
       const { data: prFiles } = await this.octokit.pulls.listFiles({
         owner,
         repo,
         pull_number: Number(prNumber),
-        per_page: 100
+        per_page: 100,
       });
 
       for (const file of files) {
-        const fileData = prFiles.find(f => f.filename === file.path);
+        const fileData = prFiles.find((f) => f.filename === file.path);
 
         if (fileData && fileData.patch) {
           combinedDiff += formatGitDiffOutput(file.path, fileData.patch);
@@ -135,7 +129,7 @@ export class RestfulGitHubDiffProvider extends BaseGitHubDiffProvider {
 
       return combinedDiff;
     } catch (error) {
-      console.error("Error fetching normal files diff:", error);
+      console.error('Error fetching normal files diff:', error);
       throw error;
     }
   }
@@ -143,7 +137,13 @@ export class RestfulGitHubDiffProvider extends BaseGitHubDiffProvider {
   /**
    * Use REST API to add PR summary comment
    */
-  protected async postPRSummaryComment({prUrl, commentMessage}: {prUrl: string, commentMessage: string}): Promise<string> {
+  protected async postPRSummaryComment({
+    prUrl,
+    commentMessage,
+  }: {
+    prUrl: string;
+    commentMessage: string;
+  }): Promise<string> {
     try {
       const { owner, repo } = getRepoInfoFromUrl(prUrl);
       const prNumber = getPRNumberFromUrl(prUrl);
@@ -153,12 +153,12 @@ export class RestfulGitHubDiffProvider extends BaseGitHubDiffProvider {
         owner,
         repo,
         issue_number: Number(prNumber),
-        body: formattedComment
+        body: formattedComment,
       });
-      
-      return "Comment added successfully";
+
+      return 'Comment added successfully';
     } catch (error) {
-      console.error("Error adding PR comment:", error);
+      console.error('Error adding PR comment:', error);
       throw error;
     }
   }
@@ -166,17 +166,27 @@ export class RestfulGitHubDiffProvider extends BaseGitHubDiffProvider {
   /**
    * Use REST API to add PR line comment
    */
-  protected async postPRLineComment({prUrl, filePath, line, commentMessage}: {prUrl: string, filePath: string, line: number, commentMessage: string}): Promise<string> {
+  protected async postPRLineComment({
+    prUrl,
+    filePath,
+    line,
+    commentMessage,
+  }: {
+    prUrl: string;
+    filePath: string;
+    line: number;
+    commentMessage: string;
+  }): Promise<string> {
     try {
       const { owner, repo } = getRepoInfoFromUrl(prUrl);
       const prNumber = getPRNumberFromUrl(prUrl);
-      
+
       const { data: pr } = await this.octokit.pulls.get({
         owner,
         repo,
-        pull_number: Number(prNumber)
+        pull_number: Number(prNumber),
       });
-      
+
       const commitId = pr.head.sha;
       const formattedComment = addPrefixForComment(commentMessage);
 
@@ -188,13 +198,16 @@ export class RestfulGitHubDiffProvider extends BaseGitHubDiffProvider {
         commit_id: commitId,
         path: filePath,
         line: line,
-        side: 'RIGHT'
+        side: 'RIGHT',
       });
-      
-      return "Line comment added successfully";
+
+      return 'Line comment added successfully';
     } catch (error) {
-      console.error("Error adding PR line comment:", error instanceof Error ? error.message : String(error));
+      console.error(
+        'Error adding PR line comment:',
+        error instanceof Error ? error.message : String(error),
+      );
       throw error;
     }
   }
-} 
+}
