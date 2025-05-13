@@ -1,0 +1,35 @@
+services:
+  n8n:
+    image: docker.n8n.io/n8nio/n8n
+    restart: always
+    ports:
+      - '5678:5678'
+    environment:
+      - N8N_HOST=${N8N_HOST:-localhost}
+      - N8N_PORT=5678
+      - N8N_PROTOCOL=${N8N_PROTOCOL:-http}
+      - NODE_ENV=development
+      - N8N_METRICS=true
+      - N8N_DIAGNOSTICS_ENABLED=true
+      - N8N_RUNNERS_ENABLED=true
+      - GENERIC_TIMEZONE=Asia/Taipei
+      - N8N_COMMUNITY_PACKAGES_ALLOW_TOOL_USAGE=true
+    volumes:
+      - n8n_data:/home/node/.n8n
+      - ./local-files:/files
+
+  ngrok:
+    image: ngrok/ngrok:latest
+    restart: unless-stopped
+    ports:
+      - '4040:4040'
+    environment:
+      - NGROK_AUTHTOKEN=
+    command:
+      - 'http'
+      - 'n8n:5678'
+    depends_on:
+      - n8n
+
+volumes:
+  n8n_data:
