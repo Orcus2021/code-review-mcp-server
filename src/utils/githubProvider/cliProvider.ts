@@ -116,17 +116,10 @@ export class CliGitHubDiffProvider extends BaseGitHubDiffProvider {
         .trim();
 
       const formattedComment = formatComment(commentMessage);
-      const jsonParams = `{
-        "body": "${formattedComment}",
-        "commit_id": "${commitId}",
-        "path": "${filePath}",
-        "line": ${line},
-        "side": "RIGHT"
-      }`;
 
       // Use gh api to add line comment
       execSync(
-        `gh api -X POST -H "Content-Type: application/json" --input - /repos/${owner}/${repo}/pulls/${prNumber}/comments <<< '${jsonParams}'`,
+        `gh api -X POST -F body="${formattedComment}" -F commit_id="${commitId}" -F path="${filePath}" -F line=${line} /repos/${owner}/${repo}/pulls/${prNumber}/comments`,
       );
 
       return 'Line comment added successfully';
