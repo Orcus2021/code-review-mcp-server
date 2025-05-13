@@ -79,31 +79,6 @@ export class RestfulGitHubDiffProvider extends BaseGitHubDiffProvider {
   }
 
   /**
-   * Get the full diff using the REST API
-   */
-  protected async getFullDiff(prUrl: string): Promise<string> {
-    try {
-      const { owner, repo } = getRepoInfoFromUrl(prUrl);
-      const prNumber = getPRNumberFromUrl(prUrl);
-
-      const response = await this.octokit.request(`GET /repos/{owner}/{repo}/pulls/{pull_number}`, {
-        owner,
-        repo,
-        pull_number: Number(prNumber),
-        headers: {
-          accept: 'application/vnd.github.v3.diff',
-        },
-      });
-
-      // When requesting with the diff media type, the response is a string
-      return response.data as unknown as string;
-    } catch (error) {
-      console.error('Error fetching full diff:', error);
-      throw error;
-    }
-  }
-
-  /**
    * Get the diff for normal-sized files using the REST API
    */
   protected async getNormalFilesDiff(prUrl: string, files: GitHubFileChange[]): Promise<string> {
