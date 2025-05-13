@@ -1,12 +1,36 @@
+import micromatch from 'micromatch';
 import type { ValidationResult } from '../../types/validationResult.js';
 import type { GitHubProvider, GitHubFileChange } from '../../types/githubProvider.js';
+import { LARGE_FILE_THRESHOLD } from '../../constants/largeFileThreshold.js';
+import {
+  getIgnorePatterns,
+  categorizeFiles,
+  generateLargeFilesDiffMessage,
+  generateChangeFilesList,
+} from '../fileUtils.js';
 
 /**
  * Base abstract class for GitHub Diff Provider
  * Implements template method pattern, defining standard process while subclasses implement specific steps
  */
 export abstract class BaseGitHubDiffProvider implements GitHubProvider {
-  protected readonly LARGE_FILE_THRESHOLD = 1000;
+  protected readonly LARGE_FILE_THRESHOLD = LARGE_FILE_THRESHOLD;
+  private ignorePatterns: string[] = [];
+
+  constructor() {
+    this.initIgnorePatterns();
+  }
+
+  private initIgnorePatterns(): void {
+    this.ignorePatterns = getIgnorePatterns();
+  }
+
+  protected shouldIgnoreFile(filePath: string): boolean {
+    if (this.ignorePatterns.length === 0) {
+      return false;
+    }
+    return micromatch.isMatch(filePath, this.ignorePatterns);
+  }
 
   /**
    * Get GitHub PR diff
@@ -135,30 +159,16 @@ export abstract class BaseGitHubDiffProvider implements GitHubProvider {
    * Handle large files and standard files
    */
   protected async generateDiff(prUrl: string, files: GitHubFileChange[]): Promise<string> {
-    // Check if there are any large files (changes exceeding threshold)
-    const hasLargeFile = files.some((file) => file.changes > this.LARGE_FILE_THRESHOLD);
+    const { largeFiles, normalFiles } = categorizeFiles(files, this.ignorePatterns);
 
-    if (!hasLargeFile) {
-      // If no large files, use fast method to get complete diff
-      return this.getFullDiff(prUrl);
+    if (largeFiles.length === 0 && normalFiles.length === 0) {
+      return '';
     }
-
-    // Handle cases with large files: classify files into large and normal files
-    const largeFiles = files.filter((file) => file.changes > this.LARGE_FILE_THRESHOLD);
-    const normalFiles = files.filter((file) => file.changes <= this.LARGE_FILE_THRESHOLD);
 
     let combinedDiff = '';
 
-    // Handle large files
-    if (largeFiles.length > 0) {
-      combinedDiff += 'Large files (changes > 1000) that were skipped:\n';
-      largeFiles.forEach((file) => {
-        combinedDiff += `diff --git a/${file.path} b/${file.path}\n`;
-        combinedDiff += `@@ File too large to display (${file.changes} changes) @@\n\n`;
-      });
-    }
-
-    // Get diff for normal files
+    combinedDiff += generateLargeFilesDiffMessage(largeFiles);
+    combinedDiff += generateChangeFilesList(normalFiles);
     const normalFilesDiff = await this.getNormalFilesDiff(prUrl, normalFiles);
     combinedDiff += normalFilesDiff;
 
@@ -170,12 +180,6 @@ export abstract class BaseGitHubDiffProvider implements GitHubProvider {
    * To be implemented by subclasses
    */
   protected abstract getFilesList(prUrl: string): Promise<GitHubFileChange[]>;
-
-  /**
-   * Abstract method: Get complete diff
-   * To be implemented by subclasses
-   */
-  protected abstract getFullDiff(prUrl: string): Promise<string>;
 
   /**
    * Abstract method: Get diff for normal-sized files

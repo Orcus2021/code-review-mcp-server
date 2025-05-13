@@ -7,16 +7,36 @@ export function formatDiffWithLineNumbers(diffContent: string): string {
   const lines = diffContent.split('\n');
   let lineNumberOld = 0;
   let lineNumberNew = 0;
+  let isDiffContent = false;
 
   // Extract file headers and line numbers from the diff header
   const headerRegex = /^@@ -(\d+),\d+ \+(\d+),\d+ @@/;
 
   const formattedLines = lines.map((line) => {
-    // If this is a diff header line, reset line counters
+    // Reset flags when a new file diff starts
+    if (line.startsWith('diff --git')) {
+      isDiffContent = false;
+      lineNumberOld = 0;
+      lineNumberNew = 0;
+      return line;
+    }
+
+    // If this is a file header line (---, +++), keep it unchanged
+    if (line.startsWith('---') || line.startsWith('+++')) {
+      return line;
+    }
+
+    // If this is a diff header line, reset line counters and start adding line numbers
     const headerMatch = line.match(headerRegex);
     if (headerMatch) {
       lineNumberOld = parseInt(headerMatch[1], 10) - 1;
       lineNumberNew = parseInt(headerMatch[2], 10) - 1;
+      isDiffContent = true;
+      return line;
+    }
+
+    // Only add line numbers after we've seen the @@ marker
+    if (!isDiffContent) {
       return line;
     }
 
@@ -34,7 +54,7 @@ export function formatDiffWithLineNumbers(diffContent: string): string {
       return line;
     }
 
-    // Keep other lines unchanged (like file headers)
+    // Keep other lines unchanged
     return line;
   });
 

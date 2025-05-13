@@ -27,18 +27,6 @@ export class CliGitHubDiffProvider extends BaseGitHubDiffProvider {
   }
 
   /**
-   * Use gh CLI to get complete diff
-   */
-  protected async getFullDiff(prUrl: string): Promise<string> {
-    try {
-      return execSync(`gh pr diff ${prUrl}`).toString();
-    } catch (error) {
-      console.error('Error fetching full diff:', error);
-      throw error;
-    }
-  }
-
-  /**
    * Use gh CLI to get diff for normal-sized files
    */
   protected async getNormalFilesDiff(prUrl: string, files: GitHubFileChange[]): Promise<string> {
