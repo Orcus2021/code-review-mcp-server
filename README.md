@@ -12,6 +12,13 @@ This tool is a Model Context Protocol (MCP) server that provides automated code 
 - Support Notion integration to retrieve review guidelines from Notion code blocks, with default guidelines as fallback
 - Include pre-configured style and code review guidelines
 
+## Tools
+
+- **CodeReview**: Runs git diff between branch and base branch. Returns the diff along with instructions to review and fix issues.
+- **CodeReviewWithGithubUrl**: Fetches diff from a GitHub PR URL. Returns the diff along with instructions to review and fix issues.
+- **AddPRSummaryComment**: Adds a summary comment to a GitHub PR.
+- **AddPRLineComment**: Adds multiple comments to specific lines in a GitHub PR. Supports commenting on specific changed lines in the PR diff.
+
 ## Architecture
 
 - **MCP Server**: Listens for code review requests from any MCP-compatible client app.
@@ -45,12 +52,21 @@ To use this tool in any app that supports MCP, follow these steps:
         "GITHUB_TOKEN": "github_token",
         "NOTION_API_KEY": "notion_api_key",
         "NOTION_CODE_REVIEW_GUIDELINE_CODE_BLOCK_URL": "notion_code_block_url_here",
-        "NOTION_STYLE_GUIDELINE_CODE_BLOCK_URL": "notion_code_block_url_here"
+        "NOTION_STYLE_GUIDELINE_CODE_BLOCK_URL": "notion_code_block_url_here",
+        "IGNORE_PATTERNS": "pattern1,pattern2,pattern3"
       }
     }
   }
 }
 ```
+
+Environment Variables Description:
+
+- `GITHUB_TOKEN`: GitHub personal access token for API access. Optional - falls back to GitHub CLI if not provided.
+- `NOTION_API_KEY`: Required for fetching review guidelines from Notion.
+- `NOTION_CODE_REVIEW_GUIDELINE_CODE_BLOCK_URL`: Notion URL containing code review guidelines. Must point to a Notion `</> Code` block and requires valid `NOTION_API_KEY` to function. Falls back to default guidelines if not configured or API key is missing.
+- `NOTION_STYLE_GUIDELINE_CODE_BLOCK_URL`: Notion URL containing style guidelines. Must point to a Notion `</> Code` block and requires valid `NOTION_API_KEY` to function. Falls back to default guidelines if not configured or API key is missing.
+- `IGNORE_PATTERNS`: Optional comma-separated glob patterns for files to exclude from review.
 
 ## Notion Integration Setup
 
@@ -112,7 +128,7 @@ https://github.com/owner/repo/pull/123
 After generating the review report, please:
 
 1.  Add PR summary comment
-2.  Use **line comments** directly within the provided code to suggest specific improvements.
+2.  If individual files require suggested changes, use line comments.
 ```
 
 This will fetch the PR's diff, provide a code review, and leave PR comments directly on GitHub.
