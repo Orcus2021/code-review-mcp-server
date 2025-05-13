@@ -24,20 +24,18 @@
   "keywords": [
     "code-review",
     "mcp",
-    "cursor",
-    "notion"
+    "notion",
+    "git",
+    "github"
   ],
   "bin": {
     "code-review-mcp-server": "./dist/index.js"
   },
   "files": [
     "dist",
-    "src",
-    "scripts",
     "README.md",
-    "rollup.config.js",
-    "tsconfig.json",
-    ".env.example"
+    ".env.example",
+    "doc"
   ],
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.4.1",
