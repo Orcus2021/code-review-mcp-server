@@ -126,7 +126,8 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
             },
             comments: {
               type: 'array',
-              description: 'Array of comments to add to specific lines in the PR.',
+              description:
+                'Array of comments to add to specific lines in the PR (required). (Array<{filePath: string, line: string, commentMessage: string}>)',
               items: {
                 type: 'object',
                 properties: {
