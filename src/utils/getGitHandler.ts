@@ -1,5 +1,38 @@
 import { execSync } from 'child_process';
+import {
+  type FileChange,
+  getIgnorePatterns,
+  categorizeFiles,
+  generateLargeFilesDiffMessage,
+  generateChangeFilesList,
+} from './fileUtils.js';
+import { formatDiffWithLineNumbers } from './formatDiff.js';
 import type { ValidationResult } from '../types/validationResult.js';
+
+const getFileChanges = (
+  folderPath: string,
+  baseBranch: string,
+  currentBranch: string,
+): FileChange[] => {
+  const numstatOutput = execSync(
+    `git -C "${folderPath}" diff --numstat ${baseBranch}..${currentBranch}`,
+    { encoding: 'utf-8' },
+  ).trim();
+
+  if (!numstatOutput) {
+    return [];
+  }
+
+  return numstatOutput.split('\n').map((line) => {
+    const [additions, deletions, path] = line.split('\t');
+    return {
+      path,
+      additions: parseInt(additions, 10),
+      deletions: parseInt(deletions, 10),
+      changes: parseInt(additions, 10) + parseInt(deletions, 10),
+    };
+  });
+};
 
 export const getCurrentBranch = (folderPath: string) => {
   return execSync(`git -C "${folderPath}" rev-parse --abbrev-ref HEAD`, {
@@ -45,6 +78,53 @@ export const getRemoteBranches = ({
   }).trim();
 };
 
+/**
+ * Get diff for a single file
+ */
+const getFileDiff = (
+  folderPath: string,
+  baseBranch: string,
+  currentBranch: string,
+  filePath: string,
+): string => {
+  try {
+    return execSync(
+      `git -C "${folderPath}" diff ${baseBranch}..${currentBranch} -- "${filePath}"`,
+      { encoding: 'utf-8' },
+    );
+  } catch (error) {
+    console.warn(`Warning: Could not get diff for file ${filePath}: ${error}`);
+    return '';
+  }
+};
+
+/**
+ * Get diff for all normal files
+ */
+const getNormalFilesDiff = (
+  folderPath: string,
+  baseBranch: string,
+  currentBranch: string,
+  normalFiles: FileChange[],
+): string => {
+  if (normalFiles.length === 0) {
+    return '';
+  }
+
+  let combinedDiff = generateChangeFilesList(normalFiles);
+
+  // Get the diff for each file individually to avoid path issues
+  for (const file of normalFiles) {
+    const fileDiff = getFileDiff(folderPath, baseBranch, currentBranch, file.path);
+    combinedDiff += fileDiff;
+  }
+
+  return combinedDiff;
+};
+
+/**
+ * Get branch diff with categorized files handling
+ */
 export const getBranchDiff = ({
   folderPath,
   baseBranch,
@@ -54,9 +134,19 @@ export const getBranchDiff = ({
   baseBranch: string;
   currentBranch: string;
 }) => {
-  return execSync(`git -C "${folderPath}" diff ${baseBranch}..${currentBranch}`, {
-    encoding: 'utf-8',
-  });
+  // Get ignore patterns and file changes
+  const ignorePatterns = getIgnorePatterns();
+  const fileChanges = getFileChanges(folderPath, baseBranch, currentBranch);
+
+  // Categorize files
+  const { largeFiles, normalFiles } = categorizeFiles(fileChanges, ignorePatterns);
+
+  // Generate diff for different file categories
+  const largeFilesDiff = generateLargeFilesDiffMessage(largeFiles);
+  const normalFilesDiff = getNormalFilesDiff(folderPath, baseBranch, currentBranch, normalFiles);
+
+  // Combine all diffs
+  return largeFilesDiff + normalFilesDiff;
 };
 
 export function validateCurrentBranch(folderPath: string): ValidationResult<string> {
@@ -144,9 +234,11 @@ export function performGitDiff(
       };
     }
 
+    const formattedDiff = formatDiffWithLineNumbers(diffOutput);
+
     return {
       isValid: true,
-      data: `Comparing changes between current branch (${currentBranch}) and base branch (${baseBranch}):\n\n${diffOutput}`,
+      data: `Comparing changes between current branch (${currentBranch}) and base branch (${baseBranch}):\n\n${formattedDiff}`,
     };
   } catch (error) {
     return {

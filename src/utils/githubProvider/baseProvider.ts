@@ -1,13 +1,20 @@
 import micromatch from 'micromatch';
 import type { ValidationResult } from '../../types/validationResult.js';
 import type { GitHubProvider, GitHubFileChange } from '../../types/githubProvider.js';
+import { LARGE_FILE_THRESHOLD } from '../../constants/largeFileThreshold.js';
+import {
+  getIgnorePatterns,
+  categorizeFiles,
+  generateLargeFilesDiffMessage,
+  generateChangeFilesList,
+} from '../fileUtils.js';
 
 /**
  * Base abstract class for GitHub Diff Provider
  * Implements template method pattern, defining standard process while subclasses implement specific steps
  */
 export abstract class BaseGitHubDiffProvider implements GitHubProvider {
-  protected readonly LARGE_FILE_THRESHOLD = 1000;
+  protected readonly LARGE_FILE_THRESHOLD = LARGE_FILE_THRESHOLD;
   private ignorePatterns: string[] = [];
 
   constructor() {
@@ -15,13 +22,7 @@ export abstract class BaseGitHubDiffProvider implements GitHubProvider {
   }
 
   private initIgnorePatterns(): void {
-    const ignorePathPattern = process.env.IGNORE_PATTERNS || '';
-    if (ignorePathPattern) {
-      this.ignorePatterns = ignorePathPattern
-        .split(',')
-        .map((pattern) => pattern.trim())
-        .filter((pattern) => pattern.length > 0);
-    }
+    this.ignorePatterns = getIgnorePatterns();
   }
 
   protected shouldIgnoreFile(filePath: string): boolean {
@@ -158,23 +159,7 @@ export abstract class BaseGitHubDiffProvider implements GitHubProvider {
    * Handle large files and standard files
    */
   protected async generateDiff(prUrl: string, files: GitHubFileChange[]): Promise<string> {
-    // Filter and categorize files in a single pass
-    const { largeFiles, normalFiles } = files.reduce(
-      (acc, file) => {
-        if (!this.shouldIgnoreFile(file.path)) {
-          if (file.changes > this.LARGE_FILE_THRESHOLD) {
-            acc.largeFiles.push(file);
-          } else {
-            acc.normalFiles.push(file);
-          }
-        }
-        return acc;
-      },
-      { largeFiles: [], normalFiles: [] } as {
-        largeFiles: GitHubFileChange[];
-        normalFiles: GitHubFileChange[];
-      },
-    );
+    const { largeFiles, normalFiles } = categorizeFiles(files, this.ignorePatterns);
 
     if (largeFiles.length === 0 && normalFiles.length === 0) {
       return '';
@@ -182,14 +167,8 @@ export abstract class BaseGitHubDiffProvider implements GitHubProvider {
 
     let combinedDiff = '';
 
-    if (largeFiles.length > 0) {
-      combinedDiff += 'Large files (changes > 1000) that were skipped:\n';
-      largeFiles.forEach((file) => {
-        combinedDiff += `diff --git a/${file.path} b/${file.path}\n`;
-        combinedDiff += `@@ File too large to display (${file.changes} changes) @@\n\n`;
-      });
-    }
-
+    combinedDiff += generateLargeFilesDiffMessage(largeFiles);
+    combinedDiff += generateChangeFilesList(normalFiles);
     const normalFilesDiff = await this.getNormalFilesDiff(prUrl, normalFiles);
     combinedDiff += normalFilesDiff;
 
