@@ -1,0 +1,182 @@
+{
+  "name": "Demo",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "46cf40a4-bb49-48f3-8ce1-e7cddb03dc95",
+        "responseMode": "lastNode",
+        "responseData": "allEntries",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "16e4acb3-0771-4630-8a20-c6cbf8a383d2",
+      "name": "Webhook",
+      "webhookId": "46cf40a4-bb49-48f3-8ce1-e7cddb03dc95"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Loop over input items and add a new field called 'myNewField' to the JSON of each one\nconst getMessage = (message)=> {\n  return `\n  code review\n  github URL: ${message}\n  After generating the review report, please:\n  1.  Add PR summary comment\n  2.  If individual files require suggested changes, use line comments.\n  `;\n}\n\n  const url = $input.first().json.body.githubUrl;\n  const message = getMessage(url);\n  console.log(message)\nreturn [{chatInput: message}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        220,
+        0
+      ],
+      "id": "3745fe60-c9d8-4e49-843d-de8aeec66e00",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "You are a software engineer."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.9,
+      "position": [
+        480,
+        0
+      ],
+      "id": "668d257d-8abd-4fa9-bc86-d62626f419eb",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "claude-3-5-sonnet-20241022",
+          "mode": "list",
+          "cachedResultName": "Claude 3.5 Sonnet (New)"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
+      "typeVersion": 1.3,
+      "position": [
+        340,
+        220
+      ],
+      "id": "d8478f2b-2f61-4d4f-bc5a-468140077e7b",
+      "name": "Anthropic Chat Model",
+      "credentials": {
+        "anthropicApi": {
+          "id": "htOPoZDvobYMErXT",
+          "name": "Anthropic account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-mcp.mcpClientTool",
+      "typeVersion": 1,
+      "position": [
+        560,
+        220
+      ],
+      "id": "7105d428-545b-4922-bff0-89a6f681bbd0",
+      "name": "Code review List Tool",
+      "credentials": {
+        "mcpClientApi": {
+          "id": "4icQW3PHv6L5GkCc",
+          "name": "Code Review"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeTool",
+        "toolName": "={{ $fromAI('tool', 'selected tool to execute') }}",
+        "toolParameters": "= {{ $fromAI('params', 'pass params of mcp tool') }}"
+      },
+      "type": "n8n-nodes-mcp.mcpClientTool",
+      "typeVersion": 1,
+      "position": [
+        780,
+        220
+      ],
+      "id": "6bcbbf48-aa5f-4946-9311-5deecbe2c700",
+      "name": "Code Review Execute Tool",
+      "credentials": {
+        "mcpClientApi": {
+          "id": "4icQW3PHv6L5GkCc",
+          "name": "Code Review"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Anthropic Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code review List Tool": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code Review Execute Tool": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "7f6ac343-d722-4b42-83fe-419154f5e0c2",
+  "meta": {
+    "instanceId": "6c523a94de60d90854f18d4912e06d50584b94484d82a2220fb0a3cf4ddf0a2b"
+  },
+  "id": "1L4TA1m0WVEHZKXd",
+  "tags": []
+}

@@ -1,4 +1,4 @@
-import { ValidationResult } from "../types/validationResult.js";
+import { ValidationResult } from '../types/validationResult.js';
 
 export async function getPromptOrFallback({
   notionUrl,
@@ -15,7 +15,5 @@ export async function getPromptOrFallback({
 
   const notionContent = await fetchPrompt(notionUrl);
 
-  return notionContent && notionContent.isValid
-    ? notionContent.data
-    : fallbackPrompt;
+  return notionContent && notionContent.isValid ? notionContent.data : fallbackPrompt;
 }

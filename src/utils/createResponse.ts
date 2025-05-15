@@ -4,7 +4,7 @@ export type ToolResponse = { content: Array<{ type: string; text: string }> };
  */
 export function createResponse(message: string): ToolResponse {
   return {
-    content: [{ type: "text", text: message }],
+    content: [{ type: 'text', text: message }],
   };
 }
 
