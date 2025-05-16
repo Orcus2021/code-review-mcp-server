@@ -77,6 +77,56 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
+      - name: Generate Release Notes
+        id: release_notes
+        run: |
+          echo "# Release v${{ steps.extract_version.outputs.version }}" > release_notes.md
+          echo "" >> release_notes.md
+
+          # Get conventional commits and categorize them
+          echo "## What's Changed" >> release_notes.md
+          echo "" >> release_notes.md
+          echo "### Breaking Changes 🛠" >> release_notes.md
+          git log --pretty=format:"* %s" $(git describe --tags --abbrev=0 2>/dev/null || git rev-list --max-parents=0 HEAD)..HEAD | grep "^* \(break\|BREAKING CHANGE\)" >> release_notes.md || true
+          echo "" >> release_notes.md
+
+          echo "### Features 🚀" >> release_notes.md
+          git log --pretty=format:"* %s" $(git describe --tags --abbrev=0 2>/dev/null || git rev-list --max-parents=0 HEAD)..HEAD | grep "^* feat" >> release_notes.md || true
+          echo "" >> release_notes.md
+
+          echo "### Bug Fixes 🐛" >> release_notes.md
+          git log --pretty=format:"* %s" $(git describe --tags --abbrev=0 2>/dev/null || git rev-list --max-parents=0 HEAD)..HEAD | grep "^* fix" >> release_notes.md || true
+          echo "" >> release_notes.md
+
+          echo "### Other Changes 📦" >> release_notes.md
+          git log --pretty=format:"* %s" $(git describe --tags --abbrev=0 2>/dev/null || git rev-list --max-parents=0 HEAD)..HEAD | grep -v "^* \(feat\|fix\|break\|BREAKING CHANGE\)" >> release_notes.md || true
+          echo "" >> release_notes.md
+
+          # Add version and installation info
+          echo "## Version" >> release_notes.md
+          echo "* Version ${{ steps.extract_version.outputs.version }} has been published to NPM" >> release_notes.md
+          echo "" >> release_notes.md
+
+          echo "## Installation" >> release_notes.md
+          echo "\`\`\`bash" >> release_notes.md
+          echo "npm install code-review-mcp-server@${{ steps.extract_version.outputs.version }}" >> release_notes.md
+          echo "\`\`\`" >> release_notes.md
+          echo "" >> release_notes.md
+
+          echo "## Support" >> release_notes.md
+          echo "If you encounter any issues or have questions, please file an issue on GitHub." >> release_notes.md
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v${{ steps.extract_version.outputs.version }}
+          name: Release v${{ steps.extract_version.outputs.version }}
+          body_path: release_notes.md
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Create backport branch
         run: |
           VERSION=${{ steps.extract_version.outputs.version }}
