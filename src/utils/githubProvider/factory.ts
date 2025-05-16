@@ -6,16 +6,22 @@ import type { ValidationResult } from '../../types/validationResult.js';
 
 dotenv.config();
 
+let githubInstance: GitHubProvider | null = null;
+
 function createGitHubDiffProvider(): GitHubProvider {
+  if (githubInstance) return githubInstance;
+
   const githubToken = process.env.GITHUB_TOKEN;
 
   if (githubToken) {
     try {
-      return new RestfulGitHubDiffProvider(githubToken);
+      githubInstance = new RestfulGitHubDiffProvider(githubToken);
+      return githubInstance;
     } catch (error) {
       console.warn(`Unable to create RESTful Provider: ${error}`);
       console.warn('Falling back to CLI Provider');
-      return new CliGitHubDiffProvider();
+      githubInstance = new CliGitHubDiffProvider();
+      return githubInstance;
     }
   }
 

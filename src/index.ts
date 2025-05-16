@@ -31,6 +31,7 @@ import {
   AddPRLineCommentToolSchema,
   runAddPRLineCommentTool,
 } from './tools/addPRLineComment.js';
+import { createErrorResponse } from './utils/createResponse.js';
 
 /**
  * CodeReview
@@ -174,7 +175,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       throw new Error(`Unknown tool: ${request.params.name}`);
     }
   } catch (error) {
-    throw new Error(
+    return createErrorResponse(
       `Error handling tool call: ${error instanceof Error ? error.message : String(error)}`,
     );
   }
