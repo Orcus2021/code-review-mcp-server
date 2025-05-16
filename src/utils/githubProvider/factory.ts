@@ -33,8 +33,8 @@ function createGitHubDiffProvider(): GitHubProvider {
  * Create appropriate provider using factory and get diff
  */
 export async function getGitHubPRDiff(prUrl: string): Promise<ValidationResult<string>> {
-  const githubInstance = createGitHubDiffProvider();
-  return await githubInstance.getPRDiff(prUrl);
+  const provider = createGitHubDiffProvider();
+  return await provider.getPRDiff(prUrl);
 }
 
 /**
