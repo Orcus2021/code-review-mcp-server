@@ -6,16 +6,24 @@ import type { ValidationResult } from '../../types/validationResult.js';
 
 dotenv.config();
 
+let githubInstance: GitHubProvider | null = null;
+
 function createGitHubDiffProvider(): GitHubProvider {
   const githubToken = process.env.GITHUB_TOKEN;
 
+  if (githubInstance) {
+    return githubInstance;
+  }
+
   if (githubToken) {
     try {
-      return new RestfulGitHubDiffProvider(githubToken);
+      githubInstance = new RestfulGitHubDiffProvider(githubToken);
+      return githubInstance;
     } catch (error) {
       console.warn(`Unable to create RESTful Provider: ${error}`);
       console.warn('Falling back to CLI Provider');
-      return new CliGitHubDiffProvider();
+      githubInstance = new CliGitHubDiffProvider();
+      return githubInstance;
     }
   }
 
@@ -27,8 +35,10 @@ function createGitHubDiffProvider(): GitHubProvider {
  * Create appropriate provider using factory and get diff
  */
 export async function getGitHubPRDiff(prUrl: string): Promise<ValidationResult<string>> {
-  const provider = createGitHubDiffProvider();
-  return await provider.getPRDiff(prUrl);
+  if (!githubInstance) {
+    githubInstance = createGitHubDiffProvider();
+  }
+  return await githubInstance.getPRDiff(prUrl);
 }
 
 /**
