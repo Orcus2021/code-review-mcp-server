@@ -26,7 +26,9 @@
     "mcp",
     "notion",
     "git",
-    "github"
+    "github",
+    "PR comment",
+    "PR review"
   ],
   "bin": {
     "code-review-mcp-server": "./dist/index.js"
