@@ -48,7 +48,15 @@ jobs:
       - name: Update package.json version and package-lock.json
         run: |
           VERSION=${{ steps.extract_version.outputs.version }}
-          npm version $VERSION --no-git-tag-version
+          CURRENT_PKG_VERSION=$(node -p "require('./package.json').version")
+
+          if [ "$CURRENT_PKG_VERSION" == "$VERSION" ]; then
+            echo "Version in package.json is already $VERSION. No change needed."
+          else
+            echo "Updating package.json version from $CURRENT_PKG_VERSION to $VERSION."
+            npm version $VERSION --no-git-tag-version
+          fi
+
           npm install --package-lock-only
 
       - name: Commit changes
