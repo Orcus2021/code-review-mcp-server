@@ -9,11 +9,9 @@ dotenv.config();
 let githubInstance: GitHubProvider | null = null;
 
 function createGitHubDiffProvider(): GitHubProvider {
-  const githubToken = process.env.GITHUB_TOKEN;
+  if (githubInstance) return githubInstance;
 
-  if (githubInstance) {
-    return githubInstance;
-  }
+  const githubToken = process.env.GITHUB_TOKEN;
 
   if (githubToken) {
     try {
@@ -35,10 +33,8 @@ function createGitHubDiffProvider(): GitHubProvider {
  * Create appropriate provider using factory and get diff
  */
 export async function getGitHubPRDiff(prUrl: string): Promise<ValidationResult<string>> {
-  if (!githubInstance) {
-    githubInstance = createGitHubDiffProvider();
-  }
-  return await githubInstance.getPRDiff(prUrl);
+  const provider = createGitHubDiffProvider();
+  return await provider.getPRDiff(prUrl);
 }
 
 /**
