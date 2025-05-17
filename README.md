@@ -2,6 +2,8 @@
 
 This tool is a Model Context Protocol (MCP) server that provides automated code review and leaves GitHub PR comments for any app that supports MCP integration.
 
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/Orcus2021/code-review-mcp-server)
+
 ## Features
 
 - Compare code differences between two git branches
