@@ -103,6 +103,8 @@ For detailed instructions, refer to: [Notion API Connections Guide](https://www.
 
 ## Usage
 
+> **Tip**: For better review results, it's recommended to switch to the branch being reviewed before running the code review command.
+
 ### Local Git Branch Review
 
 In your MCP-compatible app, send the following command:
