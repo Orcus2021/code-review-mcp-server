@@ -2,6 +2,8 @@
 
 This tool is a Model Context Protocol (MCP) server that provides automated code review and leaves GitHub PR comments for any app that supports MCP integration.
 
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/Orcus2021/code-review-mcp-server)
+
 ## Features
 
 - Compare code differences between two git branches
@@ -100,6 +102,8 @@ Note: Currently only supports reading code blocks from Notion
 For detailed instructions, refer to: [Notion API Connections Guide](https://www.notion.com/help/add-and-manage-connections-with-the-api)
 
 ## Usage
+
+> **Tip**: For better review results, it's recommended to switch to the branch being reviewed before running the code review command.
 
 ### Local Git Branch Review
 
