@@ -36,27 +36,15 @@ export const getInstructions = ({
   * **Basic Issue Detection (Basic Level):**
     * Syntax and logical errors
     * Code that may crash or behave incorrectly
-    * Inefficient code patterns
-    * Resource leaks or performance issues
   
   * **In-depth Optimization Analysis (Intermediate Level):**
     * Code redundancy: Look for repeated logic that could be extracted into functions or constants
     * Complexity: Identify overly complex functions or components
     * Naming and abstraction: Evaluate if naming and abstraction levels are appropriate
-    * Testability: Check if the code is easy to test
-    * Performance optimization: Check if useMemo/useCallback can be used to optimize rendering
-    * Component decomposition: Evaluate if components have single responsibilities and can be further broken down
   
   * **Logical Flaw Detection (Advanced Level):**
     * Edge cases: Check if various input scenarios are considered, including exceptional cases
-    * Concurrency issues: Evaluate potential problems with concurrent operations
-    * State management: Check if state transitions are reasonable and complete
-    * Error handling: Assess the completeness of error handling
-    * Security considerations: Check for potential security risks
-    * User experience: Consider the impact of code changes on user experience
     * Scalability: Assess whether the code can adapt to future requirement changes
-    * Timezone handling: Check if date/time-related logic correctly handles timezones
-    * Internationalization issues: Ensure proper implementation of multi-language support
     * Data consistency: Evaluate if data remains consistent across different states
     * Conditional logic completeness: Check if all possible condition branches are covered
     * Default value handling: Ensure default values are chosen reasonably and won't cause unexpected behavior
