@@ -10,19 +10,15 @@ export const getInstructions = ({
 
 ### Step 1: Overall File Review
 * Understand the entire code diff and its overall goal
-* Identify modified, added, and deleted files and code blocks
 
-### Step 2: Detailed File Analysis
-* **Git Diff Parsing:**
-    * Extract modified file paths from diff output
-    * Identify change ranges (marked by @@ symbols)
-    * Read complete content of each file
+### Step 1.1: Display Changed Files
+* First, display a list of all changed file paths from the diff output
 
-### Step 2.1: Read Complete Files
-* **MANDATORY:** For EVERY file in the diff, use the read_file tool with should_read_entire_file=true
-* Always retrieve the complete content of each modified file before proceeding
+### Step 2: Read Complete Files
+* For EVERY file in the diff, you MUST use the read_file tool with should_read_entire_file=true to read the COMPLETE file content
+* This is a CRITICAL step that MUST be performed for EVERY single changed file in the diff
+* DO NOT skip any files - each and every file must be read in its entirety
 * Only after reading the complete file content, proceed with the detailed analysis
-* This step MUST be performed for each file identified in Step 1
 
 * **File Reading Focus:**
     * Examine changed lines and their context
@@ -31,35 +27,19 @@ export const getInstructions = ({
 
 ### Step 3: Code Issues, Optimizations & Logical Flaws Analysis
 * **Goal:** Comprehensively identify code issues, optimization opportunities, and potential logical flaws
-* Must check the following aspects, ensuring coverage across basic, intermediate, and advanced analysis levels:
+* Must check the following aspects, ensuring coverage across basic and advanced analysis levels:
 
   * **Basic Issue Detection (Basic Level):**
     * Syntax and logical errors
     * Code that may crash or behave incorrectly
-    * Inefficient code patterns
-    * Resource leaks or performance issues
-  
-  * **In-depth Optimization Analysis (Intermediate Level):**
-    * Code redundancy: Look for repeated logic that could be extracted into functions or constants
     * Complexity: Identify overly complex functions or components
     * Naming and abstraction: Evaluate if naming and abstraction levels are appropriate
-    * Testability: Check if the code is easy to test
-    * Performance optimization: Check if useMemo/useCallback can be used to optimize rendering
-    * Component decomposition: Evaluate if components have single responsibilities and can be further broken down
   
   * **Logical Flaw Detection (Advanced Level):**
     * Edge cases: Check if various input scenarios are considered, including exceptional cases
-    * Concurrency issues: Evaluate potential problems with concurrent operations
-    * State management: Check if state transitions are reasonable and complete
-    * Error handling: Assess the completeness of error handling
-    * Security considerations: Check for potential security risks
-    * User experience: Consider the impact of code changes on user experience
     * Scalability: Assess whether the code can adapt to future requirement changes
-    * Timezone handling: Check if date/time-related logic correctly handles timezones
-    * Internationalization issues: Ensure proper implementation of multi-language support
     * Data consistency: Evaluate if data remains consistent across different states
     * Conditional logic completeness: Check if all possible condition branches are covered
-    * Default value handling: Ensure default values are chosen reasonably and won't cause unexpected behavior
 
 * **Output:** Record all issues with location, description, and clearly indicate severity and priority of the issues
 
@@ -82,11 +62,18 @@ export const getInstructions = ({
 
 ## Review Output Format
 
-**NOTE: YOU MUST STRICTLY FOLLOW THE FORMATS BELOW. ANY DEVIATION FROM THESE FORMATS IS UNACCEPTABLE.**
-
 **FOR EACH MODIFIED FILE, YOU MUST PROVIDE A STRUCTURED ANALYSIS USING FORMAT 1.**
 
 **YOU MUST ALWAYS PROVIDE A FINAL CONCLUSION USING FORMAT 2.**
+
+### Format 0: Changed Files List Format
+**Changed Files:**
+- [File Path 1]
+- [File Path 2]
+- [File Path 3]
+...
+
+**Note:** This list must be provided before any detailed file analysis
 
 ### Format 1: Issue Reporting Format
 **File:** [File Path]
@@ -138,11 +125,7 @@ export const getInstructions = ({
 
 **IMPORTANT: Your review MUST follow this strict structure. For each file in the diff, provide analysis using Format 1. Then provide an overall conclusion using Format 2. Use the appropriate markers from the Marking Rules.**
 
-**CRITICAL: NEVER skip reading the complete file content. ALWAYS execute read_file with should_read_entire_file=true for EVERY modified file before analyzing it.**
-
 **You MUST analyze all review rules and guidelines mentioned in the review instructions, ensuring comprehensive code review coverage. For each checkpoint, not only check for rule violations but also provide optimization suggestions.**
-
-Please provide the code diff for review.
   `;
 
   return INSTRUCTIONS;
