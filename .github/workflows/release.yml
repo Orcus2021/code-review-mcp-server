@@ -14,8 +14,12 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0
           token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+
+      - name: Fetch all history and tags
+        run: |
+          git fetch --prune --unshallow || git fetch --prune
+          git fetch --depth=1 origin +refs/tags/*:refs/tags/*
 
       - name: Set up Git User
         run: |
