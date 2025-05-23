@@ -65,12 +65,15 @@ jobs:
           config_file: .github/changelog-ci-config.yml
           release_version: v${{ steps.extract_version.outputs.version }}
           github_token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+          commit_changelog: false
+          changelog_filename: CHANGELOG.md
+          pull_request_refs: true
 
       - name: Commit changes
         run: |
           VERSION=${{ steps.extract_version.outputs.version }}
-          git add package.json package-lock.json
-          git commit -m "chore: bump version to $VERSION"
+          git add package.json package-lock.json CHANGELOG.md
+          git commit -m "chore: bump version to $VERSION and update changelog"
 
       - name: Create and push tag
         run: |
