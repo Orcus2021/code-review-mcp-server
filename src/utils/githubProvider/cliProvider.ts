@@ -119,4 +119,38 @@ export class CliGitHubDiffProvider extends BaseGitHubDiffProvider {
       throw error;
     }
   }
+
+  /**
+   * Create a new PR using gh CLI
+   */
+  protected async createPRImplementation({
+    owner,
+    repo,
+    title,
+    body,
+    baseBranch,
+    currentBranch,
+  }: {
+    owner: string;
+    repo: string;
+    title: string;
+    body: string;
+    baseBranch: string;
+    currentBranch: string;
+  }): Promise<string> {
+    try {
+      // Format the body to escape special characters
+      const formattedBody = body.replace(/"/g, '\\"');
+
+      // Use gh CLI to create PR
+      const result = execSync(
+        `gh pr create --repo ${owner}/${repo} --title "${title}" --body "${formattedBody}" --base ${baseBranch} --head ${currentBranch}`,
+      ).toString();
+
+      return result.trim();
+    } catch (error) {
+      console.error('Error creating PR:', error);
+      throw error;
+    }
+  }
 }
