@@ -8,6 +8,7 @@ import {
   generateLargeFilesDiffMessage,
   generateChangeFilesList,
 } from '../fileUtils.js';
+import { getRepoInfoFromUrl } from '../parseGithubUrl.js';
 
 /**
  * Base abstract class for GitHub Diff Provider
@@ -213,5 +214,80 @@ export abstract class BaseGitHubDiffProvider implements GitHubProvider {
     filePath: string;
     line: number;
     commentMessage: string;
+  }): Promise<string>;
+
+  /**
+   * Create a new PR
+   * Template method defines the process
+   */
+  async createPR({
+    repoUrl,
+    title,
+    body,
+    baseBranch,
+    currentBranch,
+  }: {
+    repoUrl: string;
+    title: string;
+    body: string;
+    baseBranch: string;
+    currentBranch: string;
+  }): Promise<ValidationResult<string>> {
+    try {
+      if (!this.isValidGitHubRepoUrl(repoUrl)) {
+        return {
+          isValid: false,
+          errorMessage: 'Invalid GitHub repository URL',
+        };
+      }
+
+      const { owner, repo } = getRepoInfoFromUrl(repoUrl);
+      const result = await this.createPRImplementation({
+        owner,
+        repo,
+        title,
+        body,
+        baseBranch,
+        currentBranch,
+      });
+
+      return {
+        isValid: true,
+        data: result,
+      };
+    } catch (error) {
+      return {
+        isValid: false,
+        errorMessage: `Error creating PR: ${error instanceof Error ? error.message : String(error)}`,
+      };
+    }
+  }
+
+  /**
+   * Validate if the URL is a valid GitHub repository URL
+   */
+  private isValidGitHubRepoUrl(url: string): boolean {
+    const pattern = /^https?:\/\/github\.com\/[^\/]+\/[^\/]+$/;
+    return pattern.test(url);
+  }
+
+  /**
+   * Abstract method: create PR
+   * Implemented by subclass
+   */
+  protected abstract createPRImplementation({
+    owner,
+    repo,
+    title,
+    body,
+    baseBranch,
+    currentBranch,
+  }: {
+    owner: string;
+    repo: string;
+    title: string;
+    body: string;
+    baseBranch: string;
+    currentBranch: string;
   }): Promise<string>;
 }

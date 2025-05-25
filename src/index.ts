@@ -31,6 +31,14 @@ import {
   AddPRLineCommentToolSchema,
   runAddPRLineCommentTool,
 } from './tools/addPRLineComment.js';
+
+import {
+  createPRToolName,
+  createPRToolDescription,
+  CreatePRToolSchema,
+  runCreatePRTool,
+} from './tools/createPR.js';
+
 import { createErrorResponse } from './utils/createResponse.js';
 
 /**
@@ -47,6 +55,9 @@ import { createErrorResponse } from './utils/createResponse.js';
  *
  * AddPRLineComment
  *  - Adds multiple comments to specific lines in a GitHub PR
+ *
+ * CreatePR
+ *  - Creates a new GitHub Pull Request
  */
 
 const server = new Server(
@@ -153,6 +164,37 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
           required: ['url', 'comments'],
         },
       },
+      {
+        name: createPRToolName,
+        description: createPRToolDescription,
+        inputSchema: {
+          type: 'object',
+          properties: {
+            githubUrl: {
+              type: 'string',
+              description: 'A GitHub repository URL to create the PR in (required).',
+            },
+            title: {
+              type: 'string',
+              description: 'The title of the PR (required).',
+            },
+            body: {
+              type: 'string',
+              description:
+                'The description/body of the PR (required). If ".github/pull_request_template.md" exists in the repository, follow that template. Otherwise, structure the description with sections: Purpose, Changes, and Notes.',
+            },
+            baseBranch: {
+              type: 'string',
+              description: 'The target branch to merge into (required).',
+            },
+            currentBranch: {
+              type: 'string',
+              description: 'The source branch containing the changes (required).',
+            },
+          },
+          required: ['githubUrl', 'title', 'body', 'baseBranch', 'currentBranch'],
+        },
+      },
     ],
   };
 });
@@ -171,6 +213,9 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
     } else if (request.params.name === addPRLineCommentToolName) {
       const validated = AddPRLineCommentToolSchema.parse(request.params.arguments);
       return await runAddPRLineCommentTool(validated);
+    } else if (request.params.name === createPRToolName) {
+      const validated = CreatePRToolSchema.parse(request.params.arguments);
+      return await runCreatePRTool(validated);
     } else {
       throw new Error(`Unknown tool: ${request.params.name}`);
     }

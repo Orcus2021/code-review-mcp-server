@@ -185,4 +185,39 @@ export class RestfulGitHubDiffProvider extends BaseGitHubDiffProvider {
       throw error;
     }
   }
+
+  /**
+   * Create a new PR using REST API
+   */
+  protected async createPRImplementation({
+    owner,
+    repo,
+    title,
+    body,
+    baseBranch,
+    currentBranch,
+  }: {
+    owner: string;
+    repo: string;
+    title: string;
+    body: string;
+    baseBranch: string;
+    currentBranch: string;
+  }): Promise<string> {
+    try {
+      const response = await this.octokit.rest.pulls.create({
+        owner,
+        repo,
+        title,
+        body,
+        head: currentBranch,
+        base: baseBranch,
+      });
+
+      return `Successfully created PR #${response.data.number}: ${response.data.html_url}`;
+    } catch (error) {
+      console.error('Error creating PR:', error);
+      throw error;
+    }
+  }
 }
