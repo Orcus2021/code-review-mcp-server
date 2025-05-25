@@ -2,7 +2,7 @@ import { execSync } from 'child_process';
 import { BaseGitHubDiffProvider } from './baseProvider.js';
 import { getPRNumberFromUrl, getRepoInfoFromUrl } from '../parseGithubUrl.js';
 import { formatGitDiffOutput } from '../formatDiff.js';
-import { formatComment } from '../formatComment.js';
+import { formatComment, escapeShellArg } from '../formatComment.js';
 import type { GitHubFileChange } from '../../types/githubProvider.js';
 
 /**
@@ -139,12 +139,13 @@ export class CliGitHubDiffProvider extends BaseGitHubDiffProvider {
     currentBranch: string;
   }): Promise<string> {
     try {
-      // Format the body to escape special characters
-      const formattedBody = body.replace(/"/g, '\\"');
-
-      // Use gh CLI to create PR
+      // Use gh CLI to create PR with escaped arguments
       const result = execSync(
-        `gh pr create --repo ${owner}/${repo} --title "${title}" --body "${formattedBody}" --base ${baseBranch} --head ${currentBranch}`,
+        `gh pr create --repo "${escapeShellArg(owner)}/${escapeShellArg(repo)}" ` +
+          `--title "${escapeShellArg(title)}" ` +
+          `--body "${escapeShellArg(body)}" ` +
+          `--base "${escapeShellArg(baseBranch)}" ` +
+          `--head "${escapeShellArg(currentBranch)}"`,
       ).toString();
 
       return result.trim();
