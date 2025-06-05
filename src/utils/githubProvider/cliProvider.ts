@@ -86,7 +86,7 @@ export class CliGitHubDiffProvider extends BaseGitHubDiffProvider {
    * Use gh CLI to add PR line comment
    */
   protected async postPRLineComment({
-    prUrl,
+    // prUrl,
     filePath,
     line,
     commentMessage,
