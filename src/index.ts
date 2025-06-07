@@ -4,40 +4,7 @@ import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { CallToolRequestSchema, ListToolsRequestSchema } from '@modelcontextprotocol/sdk/types.js';
 
-import {
-  codeReviewToolName,
-  codeReviewToolDescription,
-  CodeReviewToolSchema,
-  runCodeReviewTool,
-} from './tools/codeReview.js';
-
-import {
-  codeReviewWithGithubUrlToolName,
-  codeReviewWithGithubUrlToolDescription,
-  CodeReviewWithGithubUrlToolSchema,
-  runCodeReviewWithGithubUrlTool,
-} from './tools/codeReviewWithGithubUrl.js';
-
-import {
-  addPRSummaryCommentToolName,
-  addPRSummaryCommentToolDescription,
-  AddPRSummaryCommentToolSchema,
-  runAddPRSummaryCommentTool,
-} from './tools/addPRSummaryComment.js';
-
-import {
-  addPRLineCommentToolName,
-  addPRLineCommentToolDescription,
-  AddPRLineCommentToolSchema,
-  runAddPRLineCommentTool,
-} from './tools/addPRLineComment.js';
-
-import {
-  getPRTemplateToolName,
-  getPRTemplateToolDescription,
-  GetPRTemplateToolSchema,
-  runGetPRTemplateTool,
-} from './tools/getPRTemplate.js';
+import { getRegisteredTools, getTool } from './tools/toolRegistry.js';
 import { createErrorResponse } from './utils/createResponse.js';
 
 /**
@@ -74,139 +41,20 @@ const server = new Server(
 
 server.setRequestHandler(ListToolsRequestSchema, async () => {
   return {
-    tools: [
-      {
-        name: codeReviewToolName,
-        description: codeReviewToolDescription,
-        inputSchema: {
-          type: 'object',
-          properties: {
-            folderPath: {
-              type: 'string',
-              description: 'Path to the full root directory of the repository to run git diff',
-            },
-            baseBranch: {
-              type: 'string',
-              description:
-                'Name of the base branch to compare against the current branch (required). Specifies the reference point for diff comparison.',
-            },
-          },
-          required: ['folderPath', 'baseBranch'],
-        },
-      },
-      {
-        name: codeReviewWithGithubUrlToolName,
-        description: codeReviewWithGithubUrlToolDescription,
-        inputSchema: {
-          type: 'object',
-          properties: {
-            url: {
-              type: 'string',
-              description: 'A GitHub pull request URL to fetch the diff from (required).',
-            },
-          },
-          required: ['url'],
-        },
-      },
-      {
-        name: addPRSummaryCommentToolName,
-        description: addPRSummaryCommentToolDescription,
-        inputSchema: {
-          type: 'object',
-          properties: {
-            url: {
-              type: 'string',
-              description: 'A GitHub pull request URL to add the comment to (required).',
-            },
-            commentMessage: {
-              type: 'string',
-              description: 'The comment message to add to the PR (required).',
-            },
-          },
-          required: ['url', 'commentMessage'],
-        },
-      },
-      {
-        name: addPRLineCommentToolName,
-        description: addPRLineCommentToolDescription,
-        inputSchema: {
-          type: 'object',
-          properties: {
-            url: {
-              type: 'string',
-              description: 'A GitHub pull request URL to add the comments to (required).',
-            },
-            comments: {
-              type: 'array',
-              description:
-                'Array of comments to add to specific lines in the PR (required). (Array<{filePath: string, line: string, commentMessage: string}>)',
-              items: {
-                type: 'object',
-                properties: {
-                  filePath: {
-                    type: 'string',
-                    description: 'Path to the file in the repository to comment on.',
-                  },
-                  line: {
-                    type: 'string',
-                    description:
-                      'Integer representing the specific line number to add a comment to. Must be a line that has been changed in the PR diff. Line ranges (e.g., "4-6") are not supported by GitHub API',
-                  },
-                  commentMessage: {
-                    type: 'string',
-                    description: 'The comment message to add to the PR (required).',
-                  },
-                },
-                required: ['filePath', 'line', 'commentMessage'],
-              },
-            },
-          },
-          required: ['url', 'comments'],
-        },
-      },
-      {
-        name: getPRTemplateToolName,
-        description: getPRTemplateToolDescription,
-        inputSchema: {
-          type: 'object',
-          properties: {
-            folderPath: {
-              type: 'string',
-              description: 'Path to the folder to search for PR template files',
-            },
-            templateName: {
-              type: 'string',
-              description:
-                'Name of the template file (optional, defaults to pull_request_template.md)',
-            },
-          },
-          required: ['folderPath'],
-        },
-      },
-    ],
+    tools: getRegisteredTools(),
   };
 });
 
 server.setRequestHandler(CallToolRequestSchema, async (request) => {
   try {
-    if (request.params.name === codeReviewToolName) {
-      const validated = CodeReviewToolSchema.parse(request.params.arguments);
-      return await runCodeReviewTool(validated);
-    } else if (request.params.name === codeReviewWithGithubUrlToolName) {
-      const validated = CodeReviewWithGithubUrlToolSchema.parse(request.params.arguments);
-      return await runCodeReviewWithGithubUrlTool(validated);
-    } else if (request.params.name === addPRSummaryCommentToolName) {
-      const validated = AddPRSummaryCommentToolSchema.parse(request.params.arguments);
-      return await runAddPRSummaryCommentTool(validated);
-    } else if (request.params.name === addPRLineCommentToolName) {
-      const validated = AddPRLineCommentToolSchema.parse(request.params.arguments);
-      return await runAddPRLineCommentTool(validated);
-    } else if (request.params.name === getPRTemplateToolName) {
-      const validated = GetPRTemplateToolSchema.parse(request.params.arguments);
-      return await runGetPRTemplateTool(validated);
-    } else {
-      throw new Error(`Unknown tool: ${request.params.name}`);
+    const toolName = request.params.name;
+    const tool = getTool(toolName);
+
+    if (!tool) {
+      throw new Error(`Unknown tool: ${toolName}`);
     }
+
+    return await tool.handler(request.params.arguments);
   } catch (error) {
     return createErrorResponse(
       `Error handling tool call: ${error instanceof Error ? error.message : String(error)}`,
