@@ -25,6 +25,9 @@ import { createErrorResponse } from './utils/createResponse.js';
  * GetPRTemplate
  *  - Read PR template from specified folder path and template name
  *  - Returns template content or default template if not found
+ *
+ * CreatePR
+ *  - Creates a new GitHub Pull Request
  */
 
 const server = new Server(
