@@ -1,37 +1,32 @@
 import { z } from 'zod';
-import dotenv from 'dotenv';
-
 import {
   validateCurrentBranch,
   validateBaseBranch,
   performGitDiff,
 } from '../utils/getGitHandler.js';
-import { getInstructions } from '../utils/instructions/index.js';
 import { createResponse, createErrorResponse } from '../utils/createResponse.js';
 import type { ToolResponse } from '../utils/createResponse.js';
 
-dotenv.config();
-
 /**
- * Code Review tool
- * - Returns the diff along with instructions to review and fix issues
+ * Local Git Diff tool
+ * - Returns the raw git diff between two branches without review instructions
  */
 
-export const codeReviewToolName = 'codeReview';
-export const codeReviewToolDescription =
-  'Run a git diff between branches. Requires a base branch name to compare against the current branch, and provide instructions to review/fix issues.';
+export const localGitDiffToolName = 'getLocalGitDiff';
+export const localGitDiffToolDescription =
+  'Get git diff between two branches locally. Returns raw diff output without review instructions.';
 
-export const CodeReviewToolSchema = z.object({
+export const LocalGitDiffToolSchema = z.object({
   folderPath: z.string().min(1, 'A folder path is required.'),
   baseBranch: z.string().min(1, 'A base branch name is required.'),
 });
 
-type CodeReviewArgs = z.infer<typeof CodeReviewToolSchema>;
+type LocalGitDiffArgs = z.infer<typeof LocalGitDiffToolSchema>;
 
 /**
- * Main function to run the git branch diff tool
+ * Main function to run the local git diff tool
  */
-export async function runCodeReviewTool(args: CodeReviewArgs): Promise<ToolResponse> {
+export async function runLocalGitDiffTool(args: LocalGitDiffArgs): Promise<ToolResponse> {
   const { folderPath, baseBranch } = args;
 
   // Validate git branch state
@@ -49,7 +44,7 @@ export async function runCodeReviewTool(args: CodeReviewArgs): Promise<ToolRespo
   // Check if current branch is the same as base branch
   if (currentBranchResult.data === baseBranchResult.data) {
     return createErrorResponse(
-      `Current branch "${currentBranchResult.data}" is the same as base branch "${baseBranchResult.data}". No differences to review.`,
+      `Current branch "${currentBranchResult.data}" is the same as base branch "${baseBranchResult.data}". No differences to show.`,
     );
   }
 
@@ -59,13 +54,8 @@ export async function runCodeReviewTool(args: CodeReviewArgs): Promise<ToolRespo
     return createErrorResponse(diffResult.errorMessage);
   }
 
-  const instructions = await getInstructions({
-    localInstructionsPath: process.env.LOCAL_INSTRUCTIONS_FILE_PATH,
-    styleGuidelineNotionUrl: process.env.NOTION_STYLE_GUIDELINE_CODE_BLOCK_URL,
-    codeReviewGuidelineNotionUrl: process.env.NOTION_CODE_REVIEW_GUIDELINE_CODE_BLOCK_URL,
-  });
-
-  const message = `Git Diff Output:\n${diffResult.data}\n\nReview Instructions:\n${instructions}`;
+  // Return pure diff without instructions
+  const message = `Git Diff Output:\n${diffResult.data}`;
 
   return createResponse(message);
 }

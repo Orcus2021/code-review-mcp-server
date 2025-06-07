@@ -43,6 +43,13 @@ import {
   runCreatePRTool,
 } from './createPR.js';
 
+import {
+  localGitDiffToolName,
+  localGitDiffToolDescription,
+  LocalGitDiffToolSchema,
+  runLocalGitDiffTool,
+} from './getLocalGitDiff.js';
+
 /**
  * Tool registry interface for better type safety and maintainability
  */
@@ -79,6 +86,30 @@ const TOOL_REGISTRY: Record<string, ToolDefinition> = {
     handler: async (args) => {
       const validated = CodeReviewToolSchema.parse(args);
       return await runCodeReviewTool(validated);
+    },
+  },
+
+  [localGitDiffToolName]: {
+    name: localGitDiffToolName,
+    description: localGitDiffToolDescription,
+    schema: {
+      type: 'object',
+      properties: {
+        folderPath: {
+          type: 'string',
+          description: 'Path to the full root directory of the repository to run git diff',
+        },
+        baseBranch: {
+          type: 'string',
+          description:
+            'Name of the base branch to compare against the current branch (required). Specifies the reference point for diff comparison.',
+        },
+      },
+      required: ['folderPath', 'baseBranch'],
+    },
+    handler: async (args) => {
+      const validated = LocalGitDiffToolSchema.parse(args);
+      return await runLocalGitDiffTool(validated);
     },
   },
 
