@@ -6,15 +6,8 @@ import {
   validateBaseBranch,
   performGitDiff,
 } from '../utils/getGitHandler.js';
-import { getNotionContent } from '../utils/getNotionContent.js';
-import { getInstructions } from '../utils/getInstructions.js';
-import { getPromptOrFallback } from '../utils/getPromptOrFallback.js';
+import { getCompleteInstructions } from '../utils/getCompleteInstructions.js';
 import { createResponse, createErrorResponse } from '../utils/createResponse.js';
-
-import {
-  STYLE_GUIDELINE_PROMPT,
-  CODE_REVIEW_GUIDELINE_PROMPT,
-} from '../constants/guidelinePrompt.js';
 import type { ToolResponse } from '../utils/createResponse.js';
 
 dotenv.config();
@@ -66,21 +59,10 @@ export async function runCodeReviewTool(args: CodeReviewArgs): Promise<ToolRespo
     return createErrorResponse(diffResult.errorMessage!);
   }
 
-  const styleGuideline = await getPromptOrFallback({
-    notionUrl: process.env.NOTION_STYLE_GUIDELINE_CODE_BLOCK_URL,
-    fallbackPrompt: STYLE_GUIDELINE_PROMPT,
-    fetchPrompt: getNotionContent,
-  });
-
-  const codeReviewGuideline = await getPromptOrFallback({
-    notionUrl: process.env.NOTION_CODE_REVIEW_GUIDELINE_CODE_BLOCK_URL,
-    fallbackPrompt: CODE_REVIEW_GUIDELINE_PROMPT,
-    fetchPrompt: getNotionContent,
-  });
-
-  const instructions = getInstructions({
-    styleGuideline,
-    codeReviewGuideline,
+  const instructions = await getCompleteInstructions({
+    localInstructionsPath: process.env.LOCAL_INSTRUCTIONS_FILE_PATH,
+    styleGuidelineNotionUrl: process.env.NOTION_STYLE_GUIDELINE_CODE_BLOCK_URL,
+    codeReviewGuidelineNotionUrl: process.env.NOTION_CODE_REVIEW_GUIDELINE_CODE_BLOCK_URL,
   });
 
   const message = `Git Diff Output:\n${diffResult.data}\n\nReview Instructions:\n${instructions}`;
