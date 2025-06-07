@@ -36,10 +36,17 @@ import {
   runGetPRTemplateTool,
 } from './getPRTemplate.js';
 
+import {
+  createPRToolName,
+  createPRToolDescription,
+  CreatePRToolSchema,
+  runCreatePRTool,
+} from './createPR.js';
+
 /**
  * Tool registry interface for better type safety and maintainability
  */
-export interface ToolDefinition<T = unknown> {
+interface ToolDefinition<T = unknown> {
   name: string;
   description: string;
   schema: JSONSchema7;
@@ -50,7 +57,7 @@ export interface ToolDefinition<T = unknown> {
  * Centralized tool registry
  * Makes it easy to add new tools and maintain existing ones
  */
-export const TOOL_REGISTRY: Record<string, ToolDefinition> = {
+const TOOL_REGISTRY: Record<string, ToolDefinition> = {
   [codeReviewToolName]: {
     name: codeReviewToolName,
     description: codeReviewToolDescription,
@@ -180,6 +187,41 @@ export const TOOL_REGISTRY: Record<string, ToolDefinition> = {
     handler: async (args) => {
       const validated = GetPRTemplateToolSchema.parse(args);
       return await runGetPRTemplateTool(validated);
+    },
+  },
+
+  [createPRToolName]: {
+    name: createPRToolName,
+    description: createPRToolDescription,
+    schema: {
+      type: 'object',
+      properties: {
+        folderPath: {
+          type: 'string',
+          description: 'Path to the git repository folder',
+        },
+        githubUrl: {
+          type: 'string',
+          description: 'GitHub repository URL (optional, auto-detected if not provided)',
+        },
+        title: {
+          type: 'string',
+          description: 'PR title',
+        },
+        body: {
+          type: 'string',
+          description: 'PR description/body',
+        },
+        baseBranch: {
+          type: 'string',
+          description: 'Target branch for the PR',
+        },
+      },
+      required: ['folderPath', 'title', 'body', 'baseBranch'],
+    },
+    handler: async (args) => {
+      const validated = CreatePRToolSchema.parse(args);
+      return await runCreatePRTool(validated);
     },
   },
 };
