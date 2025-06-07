@@ -29,13 +29,6 @@ type LocalGitDiffArgs = z.infer<typeof LocalGitDiffToolSchema>;
 export async function runLocalGitDiffTool(args: LocalGitDiffArgs): Promise<ToolResponse> {
   const { folderPath, baseBranch } = args;
 
-  // Validate required parameters
-  if (!baseBranch) {
-    return createErrorResponse(
-      "Please provide a base branch name using the 'baseBranch' parameter. This is required to perform a git diff operation.",
-    );
-  }
-
   // Validate git branch state
   const currentBranchResult = validateCurrentBranch(folderPath);
   if (!currentBranchResult.isValid) {
