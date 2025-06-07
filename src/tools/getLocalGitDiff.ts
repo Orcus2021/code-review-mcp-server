@@ -32,19 +32,26 @@ export async function runLocalGitDiffTool(args: LocalGitDiffArgs): Promise<ToolR
   // Validate git branch state
   const currentBranchResult = validateCurrentBranch(folderPath);
   if (!currentBranchResult.isValid) {
-    return createErrorResponse(currentBranchResult.errorMessage!);
+    return createErrorResponse(currentBranchResult.errorMessage);
   }
 
   // Resolve base branch
   const baseBranchResult = validateBaseBranch(folderPath, baseBranch);
   if (!baseBranchResult.isValid) {
-    return createErrorResponse(baseBranchResult.errorMessage!);
+    return createErrorResponse(baseBranchResult.errorMessage);
+  }
+
+  // Check if current branch is the same as base branch
+  if (currentBranchResult.data === baseBranchResult.data) {
+    return createErrorResponse(
+      `Current branch "${currentBranchResult.data}" is the same as base branch "${baseBranchResult.data}". No differences to show.`,
+    );
   }
 
   // Perform git diff
   const diffResult = performGitDiff(folderPath, baseBranchResult.data!, currentBranchResult.data!);
   if (!diffResult.isValid) {
-    return createErrorResponse(diffResult.errorMessage!);
+    return createErrorResponse(diffResult.errorMessage);
   }
 
   // Return pure diff without instructions

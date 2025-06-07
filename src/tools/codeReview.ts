@@ -34,13 +34,6 @@ type CodeReviewArgs = z.infer<typeof CodeReviewToolSchema>;
 export async function runCodeReviewTool(args: CodeReviewArgs): Promise<ToolResponse> {
   const { folderPath, baseBranch } = args;
 
-  // Validate required parameters
-  if (!baseBranch) {
-    return createErrorResponse(
-      "Please provide a base branch name using the 'baseBranch' parameter. This is required to perform a git diff operation.",
-    );
-  }
-
   // Validate git branch state
   const currentBranchResult = validateCurrentBranch(folderPath);
   if (!currentBranchResult.isValid) {
@@ -51,6 +44,13 @@ export async function runCodeReviewTool(args: CodeReviewArgs): Promise<ToolRespo
   const baseBranchResult = validateBaseBranch(folderPath, baseBranch);
   if (!baseBranchResult.isValid) {
     return createErrorResponse(baseBranchResult.errorMessage);
+  }
+
+  // Check if current branch is the same as base branch
+  if (currentBranchResult.data === baseBranchResult.data) {
+    return createErrorResponse(
+      `Current branch "${currentBranchResult.data}" is the same as base branch "${baseBranchResult.data}". No differences to review.`,
+    );
   }
 
   // Perform git diff
