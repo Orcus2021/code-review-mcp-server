@@ -31,6 +31,13 @@ import {
   AddPRLineCommentToolSchema,
   runAddPRLineCommentTool,
 } from './tools/addPRLineComment.js';
+
+import {
+  getPRTemplateToolName,
+  getPRTemplateToolDescription,
+  GetPRTemplateToolSchema,
+  runGetPRTemplateTool,
+} from './tools/getPRTemplate.js';
 import { createErrorResponse } from './utils/createResponse.js';
 
 /**
@@ -47,6 +54,10 @@ import { createErrorResponse } from './utils/createResponse.js';
  *
  * AddPRLineComment
  *  - Adds multiple comments to specific lines in a GitHub PR
+ *
+ * GetPRTemplate
+ *  - Read PR template from specified folder path and template name
+ *  - Returns template content or default template if not found
  */
 
 const server = new Server(
@@ -153,6 +164,25 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
           required: ['url', 'comments'],
         },
       },
+      {
+        name: getPRTemplateToolName,
+        description: getPRTemplateToolDescription,
+        inputSchema: {
+          type: 'object',
+          properties: {
+            folderPath: {
+              type: 'string',
+              description: 'Path to the folder to search for PR template files',
+            },
+            templateName: {
+              type: 'string',
+              description:
+                'Name of the template file (optional, defaults to pull_request_template.md)',
+            },
+          },
+          required: ['folderPath'],
+        },
+      },
     ],
   };
 });
@@ -171,6 +201,9 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
     } else if (request.params.name === addPRLineCommentToolName) {
       const validated = AddPRLineCommentToolSchema.parse(request.params.arguments);
       return await runAddPRLineCommentTool(validated);
+    } else if (request.params.name === getPRTemplateToolName) {
+      const validated = GetPRTemplateToolSchema.parse(request.params.arguments);
+      return await runGetPRTemplateTool(validated);
     } else {
       throw new Error(`Unknown tool: ${request.params.name}`);
     }
