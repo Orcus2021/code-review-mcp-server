@@ -1,3 +1,6 @@
+import type { ToolResponse } from '../utils/createResponse.js';
+import type { JSONSchema7 } from 'json-schema';
+
 import {
   codeReviewToolName,
   codeReviewToolDescription,
@@ -36,11 +39,11 @@ import {
 /**
  * Tool registry interface for better type safety and maintainability
  */
-export interface ToolDefinition {
+export interface ToolDefinition<T = unknown> {
   name: string;
   description: string;
-  schema: any;
-  handler: (args: any) => Promise<any>;
+  schema: JSONSchema7;
+  handler: (args: T) => Promise<ToolResponse>;
 }
 
 /**
