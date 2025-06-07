@@ -6,7 +6,14 @@ import prettierConfig from 'eslint-config-prettier';
 
 export default [
   {
-    ignores: ['node_modules/**/*', 'dist/**/*', 'coverage/**/*', '*.config.js', '*.config.cjs', '*.config.mjs'],
+    ignores: [
+      'node_modules/**/*',
+      'dist/**/*',
+      'coverage/**/*',
+      '*.config.js',
+      '*.config.cjs',
+      '*.config.mjs',
+    ],
   },
   eslint.configs.recommended,
   {
@@ -21,6 +28,15 @@ export default [
       globals: {
         process: 'readonly',
         console: 'readonly',
+        describe: 'readonly',
+        it: 'readonly',
+        test: 'readonly',
+        expect: 'readonly',
+        beforeAll: 'readonly',
+        beforeEach: 'readonly',
+        afterAll: 'readonly',
+        afterEach: 'readonly',
+        jest: 'readonly',
       },
     },
     plugins: {
@@ -39,4 +55,4 @@ export default [
       'no-useless-escape': 'off',
     },
   },
-]; 
+];
