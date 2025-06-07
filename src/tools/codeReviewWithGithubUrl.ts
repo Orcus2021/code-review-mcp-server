@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import dotenv from 'dotenv';
 
-import { getCompleteInstructions } from '../utils/getCompleteInstructions.js';
+import { getInstructions } from '../utils/instructions/index.js';
 import { createResponse, createErrorResponse } from '../utils/createResponse.js';
 import { formatDiffWithLineNumbers } from '../utils/formatDiff.js';
 import { getGitHubPRDiff } from '../utils/githubProvider/index.js';
@@ -45,7 +45,7 @@ export async function runCodeReviewWithGithubUrlTool(
     return createErrorResponse(diffResult.errorMessage);
   }
 
-  const instructions = await getCompleteInstructions({
+  const instructions = await getInstructions({
     localInstructionsPath: process.env.LOCAL_INSTRUCTIONS_FILE_PATH,
     styleGuidelineNotionUrl: process.env.NOTION_STYLE_GUIDELINE_CODE_BLOCK_URL,
     codeReviewGuidelineNotionUrl: process.env.NOTION_CODE_REVIEW_GUIDELINE_CODE_BLOCK_URL,

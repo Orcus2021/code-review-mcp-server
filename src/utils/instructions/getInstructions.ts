@@ -1,16 +1,16 @@
+import { getPromptOrFallback } from '../getPromptOrFallback.js';
+import { getNotionContent } from '../getNotionContent.js';
 import { readLocalMarkdownFile } from './localFileUtils.js';
-import { getPromptOrFallback } from './getPromptOrFallback.js';
-import { getNotionContent } from './getNotionContent.js';
-import { getInstructions } from './getInstructions.js';
+import { formatInstructions } from './formatInstructions.js';
 import {
   STYLE_GUIDELINE_PROMPT,
   CODE_REVIEW_GUIDELINE_PROMPT,
-} from '../constants/guidelinePrompt.js';
+} from '../../constants/guidelinePrompt.js';
 
 /**
  * Get complete instructions with priority: local > notion > default
  */
-export async function getCompleteInstructions({
+export async function getInstructions({
   localInstructionsPath,
   styleGuidelineNotionUrl,
   codeReviewGuidelineNotionUrl,
@@ -19,17 +19,17 @@ export async function getCompleteInstructions({
   styleGuidelineNotionUrl?: string;
   codeReviewGuidelineNotionUrl?: string;
 }): Promise<string> {
-  // 1. 優先檢查本地檔案
+  // 1. Check local file first
   if (localInstructionsPath) {
     const localResult = await readLocalMarkdownFile(localInstructionsPath);
     if (localResult.isValid) {
-      return localResult.data; // 完全替代整個指令
+      return localResult.data;
     }
-    // Log warning but continue to fallback
+
     console.warn(`Failed to read local instructions file: ${localResult.errorMessage}`);
   }
 
-  // 2. 回退到現有邏輯：組合 style + review guidelines
+  // 2. Fallback to existing logic: combine style + review guidelines
   const styleGuideline = await getPromptOrFallback({
     notionUrl: styleGuidelineNotionUrl,
     fallbackPrompt: STYLE_GUIDELINE_PROMPT,
@@ -42,7 +42,7 @@ export async function getCompleteInstructions({
     fetchPrompt: getNotionContent,
   });
 
-  return getInstructions({
+  return formatInstructions({
     styleGuideline,
     codeReviewGuideline,
   });

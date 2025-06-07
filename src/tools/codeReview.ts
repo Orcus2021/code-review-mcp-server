@@ -6,7 +6,7 @@ import {
   validateBaseBranch,
   performGitDiff,
 } from '../utils/getGitHandler.js';
-import { getCompleteInstructions } from '../utils/getCompleteInstructions.js';
+import { getInstructions } from '../utils/instructions/index.js';
 import { createResponse, createErrorResponse } from '../utils/createResponse.js';
 import type { ToolResponse } from '../utils/createResponse.js';
 
@@ -59,7 +59,7 @@ export async function runCodeReviewTool(args: CodeReviewArgs): Promise<ToolRespo
     return createErrorResponse(diffResult.errorMessage!);
   }
 
-  const instructions = await getCompleteInstructions({
+  const instructions = await getInstructions({
     localInstructionsPath: process.env.LOCAL_INSTRUCTIONS_FILE_PATH,
     styleGuidelineNotionUrl: process.env.NOTION_STYLE_GUIDELINE_CODE_BLOCK_URL,
     codeReviewGuidelineNotionUrl: process.env.NOTION_CODE_REVIEW_GUIDELINE_CODE_BLOCK_URL,
