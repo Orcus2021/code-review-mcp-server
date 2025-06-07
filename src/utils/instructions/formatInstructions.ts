@@ -1,4 +1,4 @@
-export const getInstructions = ({
+export const formatInstructions = ({
   styleGuideline,
   codeReviewGuideline,
 }: {

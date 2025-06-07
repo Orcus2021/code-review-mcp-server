@@ -1,17 +1,10 @@
 import { z } from 'zod';
 import dotenv from 'dotenv';
 
-import { getNotionContent } from '../utils/getNotionContent.js';
-import { getInstructions } from '../utils/getInstructions.js';
-import { getPromptOrFallback } from '../utils/getPromptOrFallback.js';
+import { getInstructions } from '../utils/instructions/index.js';
 import { createResponse, createErrorResponse } from '../utils/createResponse.js';
 import { formatDiffWithLineNumbers } from '../utils/formatDiff.js';
 import { getGitHubPRDiff } from '../utils/githubProvider/index.js';
-
-import {
-  STYLE_GUIDELINE_PROMPT,
-  CODE_REVIEW_GUIDELINE_PROMPT,
-} from '../constants/guidelinePrompt.js';
 import type { ToolResponse } from '../utils/createResponse.js';
 
 dotenv.config();
@@ -52,21 +45,10 @@ export async function runCodeReviewWithGithubUrlTool(
     return createErrorResponse(diffResult.errorMessage);
   }
 
-  const styleGuideline = await getPromptOrFallback({
-    notionUrl: process.env.NOTION_STYLE_GUIDELINE_CODE_BLOCK_URL,
-    fallbackPrompt: STYLE_GUIDELINE_PROMPT,
-    fetchPrompt: getNotionContent,
-  });
-
-  const codeReviewGuideline = await getPromptOrFallback({
-    notionUrl: process.env.NOTION_CODE_REVIEW_GUIDELINE_CODE_BLOCK_URL,
-    fallbackPrompt: CODE_REVIEW_GUIDELINE_PROMPT,
-    fetchPrompt: getNotionContent,
-  });
-
-  const instructions = getInstructions({
-    styleGuideline,
-    codeReviewGuideline,
+  const instructions = await getInstructions({
+    localInstructionsPath: process.env.LOCAL_INSTRUCTIONS_FILE_PATH,
+    styleGuidelineNotionUrl: process.env.NOTION_STYLE_GUIDELINE_CODE_BLOCK_URL,
+    codeReviewGuidelineNotionUrl: process.env.NOTION_CODE_REVIEW_GUIDELINE_CODE_BLOCK_URL,
   });
   const diff = formatDiffWithLineNumbers(diffResult.data);
   const message = `GitHub PR Diff Output:\n${diff}\n\nReview Instructions:\n${instructions}`;
