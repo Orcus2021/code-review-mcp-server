@@ -1,8 +1,8 @@
 import { promises as fs } from 'fs';
 import path from 'path';
 import os from 'os';
-import type { ValidationResult } from '../../types/validationResult.js';
-import { LOCAL_FILE_MAX_SIZE } from '../../constants/localFileMaxSize.js';
+import type { ValidationResult } from '../types/validationResult.js';
+import { LOCAL_FILE_MAX_SIZE } from '../constants/localFileMaxSize.js';
 
 /**
  * Validate if a file path has a markdown extension

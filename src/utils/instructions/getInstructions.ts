@@ -1,6 +1,6 @@
 import { getPromptOrFallback } from '../getPromptOrFallback.js';
 import { getNotionContent } from '../getNotionContent.js';
-import { readLocalMarkdownFile } from './localFileUtils.js';
+import { readLocalMarkdownFile } from '../localFileUtils.js';
 import { formatInstructions } from './formatInstructions.js';
 import {
   STYLE_GUIDELINE_PROMPT,
