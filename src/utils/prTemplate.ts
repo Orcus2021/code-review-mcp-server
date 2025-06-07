@@ -22,17 +22,50 @@ export interface TemplateSearchResult {
 }
 
 /**
+ * Get all possible PR template search paths according to GitHub documentation
+ * Priority order (highest to lowest):
+ * 1. .github/PULL_REQUEST_TEMPLATE/ directory (multiple templates)
+ * 2. .github/pull_request_template.md (hidden directory)
+ * 3. docs/pull_request_template.md (docs directory)
+ * 4. pull_request_template.md (root directory)
+ * 5. PULL_REQUEST_TEMPLATE/ directory in root (multiple templates)
+ * 6. docs/PULL_REQUEST_TEMPLATE/ directory (multiple templates)
+ */
+function getTemplatePaths(folderPath: string, templateName?: string): string[] {
+  const fileName = templateName || 'pull_request_template.md';
+
+  return [
+    // Priority 1: .github/PULL_REQUEST_TEMPLATE/ directory
+    path.join(folderPath, '.github', 'PULL_REQUEST_TEMPLATE', fileName),
+
+    // Priority 2: .github/ hidden directory
+    path.join(folderPath, '.github', fileName),
+
+    // Priority 3: docs/ directory
+    path.join(folderPath, 'docs', fileName),
+
+    // Priority 4: root directory
+    path.join(folderPath, fileName),
+
+    // Priority 5: PULL_REQUEST_TEMPLATE/ in root
+    path.join(folderPath, 'PULL_REQUEST_TEMPLATE', fileName),
+
+    // Priority 6: docs/PULL_REQUEST_TEMPLATE/ directory
+    path.join(folderPath, 'docs', 'PULL_REQUEST_TEMPLATE', fileName),
+  ];
+}
+
+/**
  * Search and read PR template file
+ * Follows GitHub's standard template locations and priority order
  */
 export async function findAndReadTemplate(
   folderPath: string,
   templateName?: string,
 ): Promise<TemplateSearchResult> {
-  const fileName = templateName || 'pull_request_template.md';
+  const searchPaths = getTemplatePaths(folderPath, templateName);
 
-  // Search paths: directly in folder and .github subdirectory
-  const searchPaths = [path.join(folderPath, fileName), path.join(folderPath, '.github', fileName)];
-
+  // Search in priority order - return the first found template
   for (const filePath of searchPaths) {
     const result = await readLocalMarkdownFile(filePath);
     if (result.isValid) {
