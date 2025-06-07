@@ -34,7 +34,7 @@ export async function runCreatePRTool(args: CreatePRArgs): Promise<ToolResponse>
   const { folderPath, githubUrl, title, body, baseBranch } = args;
 
   try {
-    // 1. 重用現有的分支驗證邏輯
+    // 1. Reuse existing branch validation logic
     const currentBranchValidation = validateCurrentBranch(folderPath);
     if (!currentBranchValidation.isValid) {
       return createErrorResponse(currentBranchValidation.errorMessage);
@@ -46,32 +46,37 @@ export async function runCreatePRTool(args: CreatePRArgs): Promise<ToolResponse>
       return createErrorResponse(baseBranchValidation.errorMessage);
     }
 
-    // 2. 自動檢測 git 信息
+    // 2. Auto-detect git information
     const gitInfo = await getGitRepoInfo(folderPath);
     if (!gitInfo.isValid) {
       return createErrorResponse(`Failed to get git repository info: ${gitInfo.errorMessage}`);
     }
 
-    // 3. 自動推送分支到遠程（如果需要的話）
-    // getGitRepoInfo 已經處理了自動推送邏輯
+    // 3. Check if current branch is pushed to remote
+    if (gitInfo.data.hasRemote && !gitInfo.data.isCurrentBranchPushed) {
+      return createErrorResponse(
+        `Current branch '${currentBranch}' has not been pushed to remote. ` +
+          `Please push the branch first using: git push origin ${currentBranch}`,
+      );
+    }
 
-    // 4. 使用提供的參數或自動檢測的值
+    // 4. Use provided parameters or auto-detected values
     const repoUrl = githubUrl || gitInfo.data.repoUrl;
 
-    // 5. 驗證必要信息
+    // 5. Validate required information
     if (!repoUrl) {
       return createErrorResponse(
         'GitHub URL could not be determined. Please provide githubUrl parameter.',
       );
     }
 
-    // 6. 調用現有的 createPR 函數
+    // 6. Call existing createPR function
     const result = await createPR({
       repoUrl,
       title,
       body,
-      baseBranch: baseBranchValidation.data, // 使用驗證後的分支名
-      currentBranch, // 使用當前分支
+      baseBranch: baseBranchValidation.data, // Use validated branch name
+      currentBranch, // Use current branch
     });
 
     if (!result.isValid) {
