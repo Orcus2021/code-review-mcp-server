@@ -1,6 +1,7 @@
 import { promises as fs } from 'fs';
 import path from 'path';
 import type { ValidationResult } from '../../types/validationResult.js';
+import { LOCAL_FILE_MAX_SIZE } from '../../constants/localFileMaxSize.js';
 
 /**
  * Validate if a file path has a markdown extension
@@ -81,7 +82,7 @@ export async function readLocalMarkdownFile(filePath: string): Promise<Validatio
 
     // Check file size (limit to 1MB)
     const stats = await fs.stat(filePath);
-    const maxSize = 1024 * 1024; // 1MB
+    const maxSize = LOCAL_FILE_MAX_SIZE;
     if (stats.size > maxSize) {
       return {
         isValid: false,
