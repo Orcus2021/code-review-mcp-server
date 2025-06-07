@@ -71,11 +71,14 @@ export async function runCreatePRTool(args: CreatePRArgs): Promise<ToolResponse>
     }
 
     // 6. Call existing createPR function
+    // Remove possible origin/ prefix for GitHub API compatibility
+    const cleanBaseBranch = baseBranchValidation.data.replace(/^origin\//, '');
+
     const result = await createPR({
       repoUrl,
       title,
       body,
-      baseBranch: baseBranchValidation.data, // Use validated branch name
+      baseBranch: cleanBaseBranch, // Use cleaned branch name
       currentBranch, // Use current branch
     });
 
