@@ -1,5 +1,6 @@
 import { promises as fs } from 'fs';
 import path from 'path';
+import os from 'os';
 import type { ValidationResult } from '../../types/validationResult.js';
 import { LOCAL_FILE_MAX_SIZE } from '../../constants/localFileMaxSize.js';
 
@@ -12,29 +13,97 @@ export function validateMarkdownFile(filePath: string): boolean {
 }
 
 /**
+ * Get system directories based on the current platform
+ */
+function getSystemDirectories(): string[] {
+  const platform = os.platform();
+
+  if (platform === 'win32') {
+    // Windows system directories
+    const systemRoot = process.env.SystemRoot || 'C:\\Windows';
+    const programFiles = process.env.ProgramFiles || 'C:\\Program Files';
+    const programFilesX86 = process.env['ProgramFiles(x86)'] || 'C:\\Program Files (x86)';
+
+    return [
+      systemRoot,
+      path.join(systemRoot, 'System32'),
+      path.join(systemRoot, 'SysWOW64'),
+      programFiles,
+      programFilesX86,
+      'C:\\Windows',
+      'C:\\Program Files',
+      'C:\\Program Files (x86)',
+    ];
+  } else {
+    // Unix/Linux/macOS system directories
+    return ['/etc', '/usr', '/bin', '/sbin', '/var', '/sys', '/proc', '/boot', '/dev'];
+  }
+}
+
+/**
  * Validate if a file path is safe (prevent directory traversal attacks)
  */
-export function isValidPath(filePath: string): boolean {
+export async function isValidPath(filePath: string): Promise<boolean> {
   try {
-    // Resolve the path to get absolute path
-    const resolvedPath = path.resolve(filePath);
+    // Get the absolute path
+    const absolutePath = path.resolve(filePath);
 
-    // Check if the resolved path contains any directory traversal patterns
-    const normalizedPath = path.normalize(filePath);
+    // Get real path to resolve symlinks
+    let realPath: string;
+    try {
+      realPath = await fs.realpath(absolutePath);
+    } catch {
+      // If realpath fails, use the absolute path for validation
+      // This handles cases where the file doesn't exist yet
+      realPath = absolutePath;
+    }
 
-    // Reject paths that contain '..' or other suspicious patterns
-    if (normalizedPath.includes('..') || normalizedPath.includes('~')) {
+    // Check for directory traversal by comparing the resolved path
+    // with a safe base directory (current working directory)
+    const cwd = process.cwd();
+    const relativePath = path.relative(cwd, realPath);
+
+    // If the relative path starts with '..' or is absolute, it's trying to escape
+    if (relativePath.startsWith('..') || path.isAbsolute(relativePath)) {
+      // Allow access only to files within the current working directory and its subdirectories
+      // unless it's an explicitly allowed absolute path
+      if (!isAllowedAbsolutePath(realPath)) {
+        return false;
+      }
+    }
+
+    // Check against system directories
+    const systemDirs = getSystemDirectories();
+    const isSystemPath = systemDirs.some((dir) => {
+      const normalizedSystemDir = path.resolve(dir);
+      return realPath.startsWith(normalizedSystemDir);
+    });
+
+    if (isSystemPath) {
       return false;
     }
 
-    // Additional security: ensure the path doesn't access system directories
-    const systemDirs = ['/etc', '/usr', '/bin', '/sbin', '/var', '/sys', '/proc'];
-    const isSystemPath = systemDirs.some((dir) => resolvedPath.startsWith(dir));
-
-    return !isSystemPath;
+    return true;
   } catch {
     return false;
   }
+}
+
+/**
+ * Check if an absolute path is explicitly allowed
+ * This can be customized based on your application's needs
+ */
+function isAllowedAbsolutePath(absolutePath: string): boolean {
+  // Define allowed absolute paths (customize as needed)
+  const allowedPaths = [
+    os.homedir(), // User's home directory
+    os.tmpdir(), // Temporary directory
+  ];
+
+  return allowedPaths.some((allowedPath) => {
+    const normalizedAllowedPath = path.resolve(allowedPath);
+    return absolutePath.startsWith(normalizedAllowedPath);
+  });
 }
 
 /**
@@ -56,7 +125,8 @@ export async function checkFileAccess(filePath: string): Promise<boolean> {
 export async function readLocalMarkdownFile(filePath: string): Promise<ValidationResult<string>> {
   try {
     // Security validation
-    if (!isValidPath(filePath)) {
+    const isPathValid = await isValidPath(filePath);
+    if (!isPathValid) {
       return {
         isValid: false,
         errorMessage: 'Invalid file path: potential security risk detected',
