@@ -247,3 +247,146 @@ export function performGitDiff(
     };
   }
 }
+
+interface GitRepoInfo {
+  repoUrl?: string; // GitHub HTTPS URL
+  currentBranch?: string; // Current branch name
+  isGitRepo: boolean; // Whether it's a git repository
+  hasRemote: boolean; // Whether it has origin remote
+  isCurrentBranchPushed: boolean; // Whether current branch is pushed to remote
+}
+
+/**
+ * Get git repository information from specified directory
+ * Integrated from gitUtils.ts
+ */
+export async function getGitRepoInfo(folderPath: string): Promise<ValidationResult<GitRepoInfo>> {
+  try {
+    // 1. Validate if it's a git repository
+    const isGitRepo = checkIsGitRepo(folderPath);
+    if (!isGitRepo) {
+      return {
+        isValid: false,
+        errorMessage: `Not a git repository: ${folderPath}`,
+      };
+    }
+
+    // 2. Get current branch (reuse existing function)
+    const currentBranch = getCurrentBranch(folderPath);
+
+    // 3. Get remote URL
+    const remoteUrl = getRemoteUrl(folderPath);
+    const hasRemote = !!remoteUrl;
+
+    // 4. Check if current branch is pushed to remote
+    const isCurrentBranchPushed = hasRemote
+      ? checkBranchPushedToRemote(folderPath, currentBranch)
+      : false;
+
+    // 5. Convert to GitHub HTTPS URL
+    const repoUrl = remoteUrl ? convertGitUrlToHttps(remoteUrl) : undefined;
+
+    return {
+      isValid: true,
+      data: {
+        repoUrl,
+        currentBranch,
+        isGitRepo: true,
+        hasRemote,
+        isCurrentBranchPushed,
+      },
+    };
+  } catch (error) {
+    return {
+      isValid: false,
+      errorMessage: `Error getting git info: ${error instanceof Error ? error.message : String(error)}`,
+    };
+  }
+}
+
+/**
+ * Check if it's a git repository
+ */
+function checkIsGitRepo(folderPath: string): boolean {
+  try {
+    execSync(`git -C "${folderPath}" rev-parse --is-inside-work-tree`, {
+      encoding: 'utf-8',
+      stdio: 'pipe',
+    });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Check if branch is pushed to remote
+ */
+function checkBranchPushedToRemote(folderPath: string, branchName: string): boolean {
+  try {
+    // Check if remote branch exists
+    const remoteBranches = execSync(
+      `git -C "${folderPath}" branch -r --list "origin/${branchName}"`,
+      {
+        encoding: 'utf-8',
+      },
+    ).trim();
+
+    if (!remoteBranches) {
+      return false;
+    }
+
+    // Check if local branch and remote branch are in sync
+    const localCommit = execSync(`git -C "${folderPath}" rev-parse ${branchName}`, {
+      encoding: 'utf-8',
+    }).trim();
+
+    const remoteCommit = execSync(`git -C "${folderPath}" rev-parse origin/${branchName}`, {
+      encoding: 'utf-8',
+    }).trim();
+
+    return localCommit === remoteCommit;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Get remote URL
+ */
+function getRemoteUrl(folderPath: string): string | null {
+  try {
+    return execSync(`git -C "${folderPath}" remote get-url origin`, {
+      encoding: 'utf-8',
+    }).trim();
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Convert SSH URL to HTTPS URL
+ * git@github.com:user/repo.git → https://github.com/user/repo
+ */
+function convertGitUrlToHttps(gitUrl: string): string {
+  // SSH format: git@github.com:user/repo.git
+  if (gitUrl.startsWith('git@github.com:')) {
+    const repoPath = gitUrl.replace('git@github.com:', '').replace('.git', '');
+    return `https://github.com/${repoPath}`;
+  }
+
+  // HTTPS format: https://github.com/user/repo.git
+  if (gitUrl.startsWith('https://github.com/')) {
+    return gitUrl.replace('.git', '');
+  }
+
+  // Return as-is if not recognized format
+  return gitUrl;
+}
+
+/**
+ * Validate if it's a GitHub URL
+ */
+export function isGitHubUrl(url: string): boolean {
+  return url.includes('github.com');
+}
