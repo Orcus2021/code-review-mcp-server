@@ -1,4 +1,4 @@
-import { ValidationResult } from '../types/validationResult.js';
+import { ValidationResult } from '../types/validationResult';
 
 export async function getPromptOrFallback({
   notionUrl,

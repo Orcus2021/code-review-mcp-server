@@ -1,5 +1,5 @@
 import micromatch from 'micromatch';
-import { LARGE_FILE_THRESHOLD } from '../constants/largeFileThreshold.js';
+import { LARGE_FILE_THRESHOLD } from '../constants/largeFileThreshold';
 
 export interface FileChange {
   path: string;
