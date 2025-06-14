@@ -75,3 +75,33 @@ export async function addPRLineComment({
     commentMessage,
   });
 }
+
+/**
+ * Convenience method: create new PR
+ * Use factory to create appropriate provider and create PR
+ */
+export async function createPR({
+  repoUrl,
+  title,
+  body,
+  baseBranch,
+  currentBranch,
+  draft = false,
+}: {
+  repoUrl: string;
+  title: string;
+  body: string;
+  baseBranch: string;
+  currentBranch: string;
+  draft?: boolean;
+}): Promise<ValidationResult<string>> {
+  const provider = createGitHubDiffProvider();
+  return await provider.createPR({
+    repoUrl,
+    title,
+    body,
+    baseBranch,
+    currentBranch,
+    draft,
+  });
+}
