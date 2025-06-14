@@ -247,6 +247,10 @@ const TOOL_REGISTRY: Record<string, ToolDefinition> = {
           type: 'string',
           description: 'Target branch for the PR',
         },
+        draft: {
+          type: 'boolean',
+          description: 'Whether to create as draft PR (optional, defaults to false)',
+        },
       },
       required: ['folderPath', 'title', 'body', 'baseBranch'],
     },
