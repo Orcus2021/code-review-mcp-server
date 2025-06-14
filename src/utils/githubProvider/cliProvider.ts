@@ -130,6 +130,7 @@ export class CliGitHubDiffProvider extends BaseGitHubDiffProvider {
     body,
     baseBranch,
     currentBranch,
+    draft,
   }: {
     owner: string;
     repo: string;
@@ -137,17 +138,22 @@ export class CliGitHubDiffProvider extends BaseGitHubDiffProvider {
     body: string;
     baseBranch: string;
     currentBranch: string;
+    draft: boolean;
   }): Promise<string> {
     try {
-      // Use gh CLI to create PR with escaped arguments
-      const result = execSync(
+      // Build gh CLI command with optional --draft flag
+      let command =
         `gh pr create --repo "${escapeShellArg(owner)}/${escapeShellArg(repo)}" ` +
-          `--title "${escapeShellArg(title)}" ` +
-          `--body "${escapeShellArg(body)}" ` +
-          `--base "${escapeShellArg(baseBranch)}" ` +
-          `--head "${escapeShellArg(currentBranch)}"`,
-      ).toString();
+        `--title "${escapeShellArg(title)}" ` +
+        `--body "${escapeShellArg(body)}" ` +
+        `--base "${escapeShellArg(baseBranch)}" ` +
+        `--head "${escapeShellArg(currentBranch)}"`;
 
+      if (draft) {
+        command += ' --draft';
+      }
+
+      const result = execSync(command).toString();
       return result.trim();
     } catch (error) {
       console.error('Error creating PR:', error);
