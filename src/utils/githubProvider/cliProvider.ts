@@ -2,7 +2,7 @@ import { execSync } from 'child_process';
 import { BaseGitHubDiffProvider } from './baseProvider.js';
 import { getPRNumberFromUrl, getRepoInfoFromUrl } from '../parseGithubUrl.js';
 import { formatGitDiffOutput } from '../formatDiff.js';
-import { formatComment } from '../formatComment.js';
+import { formatComment, escapeShellArg } from '../formatComment.js';
 import type { GitHubFileChange } from '../../types/githubProvider.js';
 
 /**
@@ -116,6 +116,47 @@ export class CliGitHubDiffProvider extends BaseGitHubDiffProvider {
         'Error adding PR line comment:',
         error instanceof Error ? error.message : String(error),
       );
+      throw error;
+    }
+  }
+
+  /**
+   * Create a new PR using gh CLI
+   */
+  protected async createPRImplementation({
+    owner,
+    repo,
+    title,
+    body,
+    baseBranch,
+    currentBranch,
+    draft,
+  }: {
+    owner: string;
+    repo: string;
+    title: string;
+    body: string;
+    baseBranch: string;
+    currentBranch: string;
+    draft: boolean;
+  }): Promise<string> {
+    try {
+      // Build gh CLI command with optional --draft flag
+      let command =
+        `gh pr create --repo "${escapeShellArg(owner)}/${escapeShellArg(repo)}" ` +
+        `--title "${escapeShellArg(title)}" ` +
+        `--body "${escapeShellArg(body)}" ` +
+        `--base "${escapeShellArg(baseBranch)}" ` +
+        `--head "${escapeShellArg(currentBranch)}"`;
+
+      if (draft) {
+        command += ' --draft';
+      }
+
+      const result = execSync(command).toString();
+      return result.trim();
+    } catch (error) {
+      console.error('Error creating PR:', error);
       throw error;
     }
   }

@@ -50,4 +50,29 @@ export interface GitHubProvider {
     line: number;
     commentMessage: string;
   }): Promise<ValidationResult<string>>;
+
+  /**
+   * Create a new PR
+   * @param repoUrl Repository URL
+   * @param title PR title
+   * @param body PR description
+   * @param baseBranch Target branch to merge into
+   * @param currentBranch Source branch to merge from
+   * @param draft Whether to create as draft PR (optional, defaults to false)
+   */
+  createPR({
+    repoUrl,
+    title,
+    body,
+    baseBranch,
+    currentBranch,
+    draft,
+  }: {
+    repoUrl: string;
+    title: string;
+    body: string;
+    baseBranch: string;
+    currentBranch: string;
+    draft?: boolean;
+  }): Promise<ValidationResult<string>>;
 }
