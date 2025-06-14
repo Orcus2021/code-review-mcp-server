@@ -196,6 +196,7 @@ export class RestfulGitHubDiffProvider extends BaseGitHubDiffProvider {
     body,
     baseBranch,
     currentBranch,
+    draft,
   }: {
     owner: string;
     repo: string;
@@ -203,6 +204,7 @@ export class RestfulGitHubDiffProvider extends BaseGitHubDiffProvider {
     body: string;
     baseBranch: string;
     currentBranch: string;
+    draft: boolean;
   }): Promise<string> {
     try {
       const response = await this.octokit.rest.pulls.create({
@@ -212,9 +214,11 @@ export class RestfulGitHubDiffProvider extends BaseGitHubDiffProvider {
         body,
         head: currentBranch,
         base: baseBranch,
+        draft,
       });
 
-      return `Successfully created PR #${response.data.number}: ${response.data.html_url}`;
+      const draftStatus = draft ? ' (Draft)' : '';
+      return `Successfully created PR #${response.data.number}${draftStatus}: ${response.data.html_url}`;
     } catch (error) {
       console.error('Error creating PR:', error);
       throw error;

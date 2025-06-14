@@ -226,12 +226,14 @@ export abstract class BaseGitHubDiffProvider implements GitHubProvider {
     body,
     baseBranch,
     currentBranch,
+    draft = false,
   }: {
     repoUrl: string;
     title: string;
     body: string;
     baseBranch: string;
     currentBranch: string;
+    draft?: boolean;
   }): Promise<ValidationResult<string>> {
     try {
       if (!this.isValidGitHubRepoUrl(repoUrl)) {
@@ -249,6 +251,7 @@ export abstract class BaseGitHubDiffProvider implements GitHubProvider {
         body,
         baseBranch,
         currentBranch,
+        draft,
       });
 
       return {
@@ -282,6 +285,7 @@ export abstract class BaseGitHubDiffProvider implements GitHubProvider {
     body,
     baseBranch,
     currentBranch,
+    draft,
   }: {
     owner: string;
     repo: string;
@@ -289,5 +293,6 @@ export abstract class BaseGitHubDiffProvider implements GitHubProvider {
     body: string;
     baseBranch: string;
     currentBranch: string;
+    draft: boolean;
   }): Promise<string>;
 }

@@ -23,6 +23,7 @@ export const CreatePRToolSchema = z.object({
   title: z.string().min(1, 'PR title is required.'),
   body: z.string().min(1, 'PR description is required.'),
   baseBranch: z.string().min(1, 'Base branch name is required.'),
+  draft: z.boolean().optional().default(false),
 });
 
 type CreatePRArgs = z.infer<typeof CreatePRToolSchema>;
@@ -31,7 +32,7 @@ type CreatePRArgs = z.infer<typeof CreatePRToolSchema>;
  * Main function to create a new GitHub PR
  */
 export async function runCreatePRTool(args: CreatePRArgs): Promise<ToolResponse> {
-  const { folderPath, githubUrl, title, body, baseBranch } = args;
+  const { folderPath, githubUrl, title, body, baseBranch, draft } = args;
 
   try {
     // 1. Reuse existing branch validation logic
@@ -80,14 +81,16 @@ export async function runCreatePRTool(args: CreatePRArgs): Promise<ToolResponse>
       body,
       baseBranch: cleanBaseBranch, // Use cleaned branch name
       currentBranch, // Use current branch
+      draft,
     });
 
     if (!result.isValid) {
       return createErrorResponse(result.errorMessage!);
     }
 
+    const draftStatus = draft ? ' (Draft)' : '';
     return createResponse(
-      `PR created successfully!\n\n` +
+      `PR created successfully!${draftStatus}\n\n` +
         `Repository: ${repoUrl}\n` +
         `Branch: ${currentBranch} → ${baseBranch}\n` +
         `Title: ${title}\n\n` +
