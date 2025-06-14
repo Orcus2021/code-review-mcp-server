@@ -86,12 +86,14 @@ export async function createPR({
   body,
   baseBranch,
   currentBranch,
+  draft = false,
 }: {
   repoUrl: string;
   title: string;
   body: string;
   baseBranch: string;
   currentBranch: string;
+  draft?: boolean;
 }): Promise<ValidationResult<string>> {
   const provider = createGitHubDiffProvider();
   return await provider.createPR({
@@ -100,5 +102,6 @@ export async function createPR({
     body,
     baseBranch,
     currentBranch,
+    draft,
   });
 }
