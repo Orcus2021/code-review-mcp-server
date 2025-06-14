@@ -15,7 +15,7 @@ import type { ToolResponse } from '../utils/createResponse.js';
 
 export const createPRToolName = 'createPR';
 export const createPRToolDescription =
-  'Create a new GitHub Pull Request with specified title, body, and branches. Automatically detects GitHub URL and current branch from local git configuration. Supports creating draft PRs with the draft parameter.';
+  'Create a new GitHub Pull Request with specified title, body, and branches. Automatically detects GitHub URL and current branch from local git configuration.';
 
 export const CreatePRToolSchema = z.object({
   folderPath: z.string().min(1, 'Folder path is required.'),
