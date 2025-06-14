@@ -1,11 +1,11 @@
-name: Code Quality Check
+name: Quality & Build Check
 
 on:
   pull_request:
     types: [opened, synchronize, reopened]
 
 jobs:
-  code-quality:
+  quality-and-build:
     runs-on: ubuntu-latest
 
     steps:
@@ -18,8 +18,37 @@ jobs:
           node-version: '18'
           cache: 'npm'
 
+      - name: Cache dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
       - name: Install dependencies
         run: npm ci
 
-      - name: Run validation (format, lint, type-check)
+      - name: Run code quality checks (format, lint, type-check)
         run: npm run validate
+
+      - name: Build project
+        run: npm run build
+
+      - name: Verify build artifacts
+        run: |
+          if [ ! -f "dist/index.js" ]; then
+            echo "❌ Build artifact dist/index.js not found"
+            exit 1
+          fi
+          echo "✅ Build artifact dist/index.js verified"
+
+      - name: Check build artifact size
+        run: |
+          if [ -f "dist/index.js" ]; then
+            SIZE=$(stat -c%s "dist/index.js")
+            echo "📦 Build artifact size: ${SIZE} bytes"
+            if [ $SIZE -lt 1000 ]; then
+              echo "⚠️  Warning: Build artifact seems unusually small"
+            fi
+          fi
