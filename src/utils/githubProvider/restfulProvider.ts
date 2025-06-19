@@ -197,6 +197,7 @@ export class RestfulGitHubDiffProvider extends BaseGitHubDiffProvider {
     baseBranch,
     currentBranch,
     draft,
+    milestone,
   }: {
     owner: string;
     repo: string;
@@ -204,7 +205,8 @@ export class RestfulGitHubDiffProvider extends BaseGitHubDiffProvider {
     body: string;
     baseBranch: string;
     currentBranch: string;
-    draft: boolean;
+    draft?: boolean;
+    milestone?: string;
   }): Promise<string> {
     try {
       const response = await this.octokit.rest.pulls.create({
@@ -215,6 +217,7 @@ export class RestfulGitHubDiffProvider extends BaseGitHubDiffProvider {
         head: currentBranch,
         base: baseBranch,
         draft,
+        ...(milestone ? { milestone } : {}),
       });
 
       const draftStatus = draft ? ' (Draft)' : '';

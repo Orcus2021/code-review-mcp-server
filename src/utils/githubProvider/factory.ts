@@ -87,6 +87,7 @@ export async function createPR({
   baseBranch,
   currentBranch,
   draft = false,
+  milestone,
 }: {
   repoUrl: string;
   title: string;
@@ -94,6 +95,7 @@ export async function createPR({
   baseBranch: string;
   currentBranch: string;
   draft?: boolean;
+  milestone?: string;
 }): Promise<ValidationResult<string>> {
   const provider = createGitHubDiffProvider();
   return await provider.createPR({
@@ -103,5 +105,6 @@ export async function createPR({
     baseBranch,
     currentBranch,
     draft,
+    milestone,
   });
 }
