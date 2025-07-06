@@ -231,6 +231,7 @@ The tool will:
 - Use the current branch as the source branch
 - Verify that the current branch has been pushed to remote
 - Create the PR using GitHub CLI or REST API
+- Support creating draft PRs and assigning milestones
 
 **Manual override** (if auto-detection fails):
 
