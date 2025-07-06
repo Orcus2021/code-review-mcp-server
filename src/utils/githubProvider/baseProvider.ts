@@ -227,6 +227,7 @@ export abstract class BaseGitHubDiffProvider implements GitHubProvider {
     baseBranch,
     currentBranch,
     draft = false,
+    milestone,
   }: {
     repoUrl: string;
     title: string;
@@ -234,6 +235,7 @@ export abstract class BaseGitHubDiffProvider implements GitHubProvider {
     baseBranch: string;
     currentBranch: string;
     draft?: boolean;
+    milestone?: string;
   }): Promise<ValidationResult<string>> {
     try {
       if (!this.isValidGitHubRepoUrl(repoUrl)) {
@@ -252,6 +254,7 @@ export abstract class BaseGitHubDiffProvider implements GitHubProvider {
         baseBranch,
         currentBranch,
         draft,
+        milestone,
       });
 
       return {
@@ -286,6 +289,7 @@ export abstract class BaseGitHubDiffProvider implements GitHubProvider {
     baseBranch,
     currentBranch,
     draft,
+    milestone,
   }: {
     owner: string;
     repo: string;
@@ -293,6 +297,7 @@ export abstract class BaseGitHubDiffProvider implements GitHubProvider {
     body: string;
     baseBranch: string;
     currentBranch: string;
-    draft: boolean;
+    draft?: boolean;
+    milestone?: string;
   }): Promise<string>;
 }
