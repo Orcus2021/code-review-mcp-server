@@ -5,9 +5,9 @@ import {
   categorizeFiles,
   generateLargeFilesDiffMessage,
   generateChangeFilesList,
-} from './fileUtils.js';
-import { formatDiffWithLineNumbers } from './formatDiff.js';
-import type { ValidationResult } from '../types/validationResult.js';
+} from './fileUtils';
+import { formatDiffWithLineNumbers } from './formatDiff';
+import type { ValidationResult } from '../types/validationResult';
 
 const getFileChanges = (
   folderPath: string,

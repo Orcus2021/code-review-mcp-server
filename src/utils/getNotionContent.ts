@@ -1,5 +1,5 @@
 import { Client } from '@notionhq/client';
-import type { ValidationResult } from '../types/validationResult.js';
+import type { ValidationResult } from '../types/validationResult';
 
 import dotenv from 'dotenv';
 

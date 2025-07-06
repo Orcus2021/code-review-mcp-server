@@ -1,5 +1,5 @@
 import path from 'path';
-import { readLocalMarkdownFile } from './localFileUtils.js';
+import { readLocalMarkdownFile } from './localFileUtils';
 
 // Default template content
 const DEFAULT_TEMPLATE = `# Purpose
