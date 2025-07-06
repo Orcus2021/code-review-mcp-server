@@ -59,6 +59,7 @@ export interface GitHubProvider {
    * @param baseBranch Target branch to merge into
    * @param currentBranch Source branch to merge from
    * @param draft Whether to create as draft PR (optional, defaults to false)
+   * @param milestone Milestone name (optional)
    */
   createPR({
     repoUrl,
@@ -67,6 +68,7 @@ export interface GitHubProvider {
     baseBranch,
     currentBranch,
     draft,
+    milestone,
   }: {
     repoUrl: string;
     title: string;
@@ -74,5 +76,6 @@ export interface GitHubProvider {
     baseBranch: string;
     currentBranch: string;
     draft?: boolean;
+    milestone?: string;
   }): Promise<ValidationResult<string>>;
 }

@@ -251,6 +251,10 @@ const TOOL_REGISTRY: Record<string, ToolDefinition> = {
           type: 'boolean',
           description: 'Whether to create as draft PR (optional, defaults to false)',
         },
+        milestone: {
+          type: 'string',
+          description: 'Milestone to assign to the PR (optional)',
+        },
       },
       required: ['folderPath', 'title', 'body', 'baseBranch'],
     },

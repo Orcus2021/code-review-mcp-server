@@ -131,6 +131,7 @@ export class CliGitHubDiffProvider extends BaseGitHubDiffProvider {
     baseBranch,
     currentBranch,
     draft,
+    milestone,
   }: {
     owner: string;
     repo: string;
@@ -139,6 +140,7 @@ export class CliGitHubDiffProvider extends BaseGitHubDiffProvider {
     baseBranch: string;
     currentBranch: string;
     draft: boolean;
+    milestone?: string;
   }): Promise<string> {
     try {
       // Build gh CLI command with optional --draft flag
@@ -151,6 +153,10 @@ export class CliGitHubDiffProvider extends BaseGitHubDiffProvider {
 
       if (draft) {
         command += ' --draft';
+      }
+
+      if (milestone) {
+        command += ` --milestone "${escapeShellArg(milestone)}"`;
       }
 
       const result = execSync(command).toString();
