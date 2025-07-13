@@ -16,45 +16,14 @@ export const formatInstructions = ({
 
 ### Step 2: Read Complete Files
 * For EVERY file in the diff, you MUST use the read_file tool with should_read_entire_file=true to read the COMPLETE file content
-* This is a CRITICAL step that MUST be performed for EVERY single changed file in the diff
-* DO NOT skip any files - each and every file must be read in its entirety
-* Only after reading the complete file content, proceed with the detailed analysis
 
-* **File Reading Focus:**
-    * Examine changed lines and their context
-    * Identify dependencies (imports, exports)
-    * Check type definitions and interfaces
-
-### Step 3: Code Issues, Optimizations & Logical Flaws Analysis
-* **Goal:** Comprehensively identify code issues, optimization opportunities, and potential logical flaws
-* Must check the following aspects, ensuring coverage across basic and advanced analysis levels:
-
-  * **Basic Issue Detection (Basic Level):**
-    * Syntax and logical errors
-    * Code that may crash or behave incorrectly
-    * Complexity: Identify overly complex functions or components
-    * Naming and abstraction: Evaluate if naming and abstraction levels are appropriate
-  
-  * **Logical Flaw Detection (Advanced Level):**
-    * Edge cases: Check if various input scenarios are considered, including exceptional cases
-    * Scalability: Assess whether the code can adapt to future requirement changes
-    * Data consistency: Evaluate if data remains consistent across different states
-    * Conditional logic completeness: Check if all possible condition branches are covered
-
-* **Output:** Record all issues with location, description, and clearly indicate severity and priority of the issues
-
-### Step 4: Style Guide Compliance
+### Step 3: Style Guide Compliance
 * **Goal:** Ensure code complies with style guide ${styleGuideline}
-* Check formatting, naming conventions, comments, structure
-* **Output:** Record non-compliant items with "🔧 FIXED" markers
 
-### Step 5: Code Review Guidelines Compliance
+### Step 4: Code Review Guidelines Compliance
 * **Goal:** Ensure changes comply with guidelines ${codeReviewGuideline}
-* Check readability, maintainability, security, test coverage
-* **Output:** Record non-compliant items with "🔧 FIXED" markers
 
 ### Step 6: Recommendations & Summary
-* Provide specific fix suggestions for each issue from Step 3
 * For non-compliant items from Steps 4-5, state the violated guideline
 * Summarize issues by category (Issues, Style, Guidelines)
 * **Final Decision:** Determine if code is acceptable or needs changes
@@ -109,21 +78,10 @@ export const formatInstructions = ({
 - **Status:** [Acceptable/Needs Modification] 
 - **Main Issues:** [If any, must list specific issues found]
 - **Required Changes:** [Must-fix items with specific references]
-- **Optimization & Logical Flaws Summary:** [Key optimization suggestions and logical flaws from Step 3]
+- **Optimization & Logical Flaws Summary:** [Key optimization suggestions and logical flaws]
 - **Suggested Improvements:** [Optional items with clear benefits]
-- **Applied Fixes:** [List of issues that were automatically fixed]
 
-**If approving the changes, provide a brief explanation of why the changes are acceptable.**
 **If rejecting the changes, clearly state which issues must be fixed before approval.**
-
-## Marking Rules
-- ⚠️ **NON-COMPLIANT:** Style/design violations 
-- ❌ **ERROR:** Code errors/potential problems
-- 💡 **SUGGESTION:** Improvement ideas
-- ✅ **COMPLIANT:** Meets all standards
-- 🔧 **FIXED:** Issue automatically corrected
-
-**IMPORTANT: Your review MUST follow this strict structure. For each file in the diff, provide analysis using Format 1. Then provide an overall conclusion using Format 2. Use the appropriate markers from the Marking Rules.**
 
 **You MUST analyze all review rules and guidelines mentioned in the review instructions, ensuring comprehensive code review coverage. For each checkpoint, not only check for rule violations but also provide optimization suggestions.**
   `;
