@@ -26,13 +26,6 @@ export abstract class BaseGitHubDiffProvider implements GitHubProvider {
     this.ignorePatterns = getIgnorePatterns();
   }
 
-  protected shouldIgnoreFile(filePath: string): boolean {
-    if (this.ignorePatterns.length === 0) {
-      return false;
-    }
-    return micromatch.isMatch(filePath, this.ignorePatterns);
-  }
-
   /**
    * Get GitHub PR diff
    * Template method defines the processing flow
