@@ -10,6 +10,9 @@ jobs:
   release:
     if: github.event.pull_request.merged == true && startsWith(github.event.pull_request.head.ref, 'release/')
     runs-on: ubuntu-latest
+    permissions:
+      contents: write # push version bump commit / tag and create the GitHub Release
+      id-token: write # mint the OIDC token for npm trusted publishing
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -27,6 +30,10 @@ jobs:
         with:
           node-version: '22'
           registry-url: 'https://registry.npmjs.org'
+
+      # OIDC trusted publishing requires npm >= 11.5.1; Node 22 ships npm 10.x.
+      - name: Upgrade npm for OIDC trusted publishing
+        run: npm install -g npm@latest
 
       - name: Extract version from branch name
         id: extract_version
@@ -74,23 +81,16 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
 
-      - name: Verify npm authentication
-        run: npm whoami
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-          NPM_CONFIG_USERCONFIG: /home/runner/work/_temp/.npmrc
-
       - name: Install dependencies
         run: npm install
 
       - name: Build package
         run: npm run build
 
+      # Auth is handled by npm OIDC trusted publishing (no NPM_TOKEN needed).
+      # Requires a Trusted Publisher configured on npmjs.com for this repo + release.yml.
       - name: Publish to NPM
         run: npm publish
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-          NPM_CONFIG_USERCONFIG: /home/runner/work/_temp/.npmrc
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
