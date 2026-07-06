@@ -1,4 +1,4 @@
-import { execSync } from 'child_process';
+import { execFileSync } from 'child_process';
 import {
   type FileChange,
   getIgnorePatterns,
@@ -14,8 +14,9 @@ const getFileChanges = (
   baseBranch: string,
   currentBranch: string,
 ): FileChange[] => {
-  const numstatOutput = execSync(
-    `git -C "${folderPath}" diff --numstat ${baseBranch}..${currentBranch}`,
+  const numstatOutput = execFileSync(
+    'git',
+    ['-C', folderPath, 'diff', '--numstat', `${baseBranch}..${currentBranch}`],
     { encoding: 'utf-8' },
   ).trim();
 
@@ -35,7 +36,7 @@ const getFileChanges = (
 };
 
 export const getCurrentBranch = (folderPath: string) => {
-  return execSync(`git -C "${folderPath}" rev-parse --abbrev-ref HEAD`, {
+  return execFileSync('git', ['-C', folderPath, 'rev-parse', '--abbrev-ref', 'HEAD'], {
     encoding: 'utf-8',
   }).trim();
 };
@@ -47,7 +48,7 @@ export const getLocalBranches = ({
   folderPath: string;
   branchName: string;
 }) => {
-  return execSync(`git -C "${folderPath}" branch --list "${branchName}"`, {
+  return execFileSync('git', ['-C', folderPath, 'branch', '--list', branchName], {
     encoding: 'utf-8',
   }).trim();
 };
@@ -55,7 +56,7 @@ export const getLocalBranches = ({
 export const fetchSpecificBranch = (folderPath: string, branchName: string): boolean => {
   try {
     // Fetch the specific branch from origin
-    execSync(`git -C "${folderPath}" fetch origin ${branchName}`, {
+    execFileSync('git', ['-C', folderPath, 'fetch', 'origin', branchName], {
       encoding: 'utf-8',
     });
 
@@ -73,7 +74,7 @@ export const getRemoteBranches = ({
   folderPath: string;
   branchName: string;
 }) => {
-  return execSync(`git -C "${folderPath}" branch -r --list "*/${branchName}"`, {
+  return execFileSync('git', ['-C', folderPath, 'branch', '-r', '--list', `*/${branchName}`], {
     encoding: 'utf-8',
   }).trim();
 };
@@ -88,8 +89,9 @@ const getFileDiff = (
   filePath: string,
 ): string => {
   try {
-    return execSync(
-      `git -C "${folderPath}" diff ${baseBranch}..${currentBranch} -- "${filePath}"`,
+    return execFileSync(
+      'git',
+      ['-C', folderPath, 'diff', `${baseBranch}..${currentBranch}`, '--', filePath],
       { encoding: 'utf-8' },
     );
   } catch (error) {
@@ -309,7 +311,7 @@ export async function getGitRepoInfo(folderPath: string): Promise<ValidationResu
  */
 function checkIsGitRepo(folderPath: string): boolean {
   try {
-    execSync(`git -C "${folderPath}" rev-parse --is-inside-work-tree`, {
+    execFileSync('git', ['-C', folderPath, 'rev-parse', '--is-inside-work-tree'], {
       encoding: 'utf-8',
       stdio: 'pipe',
     });
@@ -325,8 +327,9 @@ function checkIsGitRepo(folderPath: string): boolean {
 function checkBranchPushedToRemote(folderPath: string, branchName: string): boolean {
   try {
     // Check if remote branch exists
-    const remoteBranches = execSync(
-      `git -C "${folderPath}" branch -r --list "origin/${branchName}"`,
+    const remoteBranches = execFileSync(
+      'git',
+      ['-C', folderPath, 'branch', '-r', '--list', `origin/${branchName}`],
       {
         encoding: 'utf-8',
       },
@@ -337,13 +340,17 @@ function checkBranchPushedToRemote(folderPath: string, branchName: string): bool
     }
 
     // Check if local branch and remote branch are in sync
-    const localCommit = execSync(`git -C "${folderPath}" rev-parse ${branchName}`, {
+    const localCommit = execFileSync('git', ['-C', folderPath, 'rev-parse', branchName], {
       encoding: 'utf-8',
     }).trim();
 
-    const remoteCommit = execSync(`git -C "${folderPath}" rev-parse origin/${branchName}`, {
-      encoding: 'utf-8',
-    }).trim();
+    const remoteCommit = execFileSync(
+      'git',
+      ['-C', folderPath, 'rev-parse', `origin/${branchName}`],
+      {
+        encoding: 'utf-8',
+      },
+    ).trim();
 
     return localCommit === remoteCommit;
   } catch {
@@ -356,7 +363,7 @@ function checkBranchPushedToRemote(folderPath: string, branchName: string): bool
  */
 function getRemoteUrl(folderPath: string): string | null {
   try {
-    return execSync(`git -C "${folderPath}" remote get-url origin`, {
+    return execFileSync('git', ['-C', folderPath, 'remote', 'get-url', 'origin'], {
       encoding: 'utf-8',
     }).trim();
   } catch {
