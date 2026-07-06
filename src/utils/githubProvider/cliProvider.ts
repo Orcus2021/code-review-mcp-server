@@ -1,8 +1,8 @@
-import { execSync } from 'child_process';
+import { execFileSync } from 'child_process';
 import { BaseGitHubDiffProvider } from './baseProvider.js';
 import { getPRNumberFromUrl, getRepoInfoFromUrl } from '../parseGithubUrl.js';
 import { formatGitDiffOutput } from '../formatDiff.js';
-import { formatComment, escapeShellArg } from '../formatComment.js';
+import { addPrefixForComment } from '../formatComment.js';
 import type { GitHubFileChange } from '../../types/githubProvider.js';
 
 /**
@@ -15,9 +15,15 @@ export class CliGitHubDiffProvider extends BaseGitHubDiffProvider {
    */
   protected async getFilesList(prUrl: string): Promise<GitHubFileChange[]> {
     try {
-      const filesJson = execSync(
-        `gh pr view ${prUrl} --json files --jq '.files | map({ path: .path, changes: (.additions + .deletions) })'`,
-      ).toString();
+      const filesJson = execFileSync('gh', [
+        'pr',
+        'view',
+        prUrl,
+        '--json',
+        'files',
+        '--jq',
+        '.files | map({ path: .path, changes: (.additions + .deletions) })',
+      ]).toString();
 
       return JSON.parse(filesJson) as GitHubFileChange[];
     } catch (error) {
@@ -36,9 +42,14 @@ export class CliGitHubDiffProvider extends BaseGitHubDiffProvider {
       let combinedDiff = '';
 
       for (const file of files) {
-        const patch = execSync(
-          `gh api repos/${owner}/${repo}/pulls/${prNumber}/files --jq '.[] | select(.filename == "${file.path}") | .patch'`,
-        ).toString();
+        // JSON.stringify produces a valid jq string literal, so an attacker-controlled
+        // filename cannot break out of the jq filter.
+        const patch = execFileSync('gh', [
+          'api',
+          `repos/${owner}/${repo}/pulls/${prNumber}/files`,
+          '--jq',
+          `.[] | select(.filename == ${JSON.stringify(file.path)}) | .patch`,
+        ]).toString();
 
         if (patch && patch.trim() !== '') {
           combinedDiff += formatGitDiffOutput(file.path, patch);
@@ -65,12 +76,17 @@ export class CliGitHubDiffProvider extends BaseGitHubDiffProvider {
     try {
       const { owner, repo } = getRepoInfoFromUrl(prUrl);
       const prNumber = getPRNumberFromUrl(prUrl);
-      const formattedComment = formatComment(commentMessage);
+      const formattedComment = addPrefixForComment(commentMessage);
 
       // Use gh api to add comment
-      execSync(
-        `gh api -X POST -F body="${formattedComment}" /repos/${owner}/${repo}/issues/${prNumber}/comments`,
-      );
+      execFileSync('gh', [
+        'api',
+        '-X',
+        'POST',
+        '-F',
+        `body=${formattedComment}`,
+        `/repos/${owner}/${repo}/issues/${prNumber}/comments`,
+      ]);
 
       return 'Comment added successfully';
     } catch (error) {
@@ -99,16 +115,32 @@ export class CliGitHubDiffProvider extends BaseGitHubDiffProvider {
     try {
       const { owner, repo } = getRepoInfoFromUrl(prUrl);
       const prNumber = getPRNumberFromUrl(prUrl);
-      const commitId = execSync(`gh api repos/${owner}/${repo}/pulls/${prNumber} --jq '.head.sha'`)
+      const commitId = execFileSync('gh', [
+        'api',
+        `repos/${owner}/${repo}/pulls/${prNumber}`,
+        '--jq',
+        '.head.sha',
+      ])
         .toString()
         .trim();
 
-      const formattedComment = formatComment(commentMessage);
+      const formattedComment = addPrefixForComment(commentMessage);
 
       // Use gh api to add line comment
-      execSync(
-        `gh api -X POST -F body="${formattedComment}" -F commit_id="${commitId}" -F path="${filePath}" -F line=${line} /repos/${owner}/${repo}/pulls/${prNumber}/comments`,
-      );
+      execFileSync('gh', [
+        'api',
+        '-X',
+        'POST',
+        '-F',
+        `body=${formattedComment}`,
+        '-F',
+        `commit_id=${commitId}`,
+        '-F',
+        `path=${filePath}`,
+        '-F',
+        `line=${line}`,
+        `/repos/${owner}/${repo}/pulls/${prNumber}/comments`,
+      ]);
 
       return 'Line comment added successfully';
     } catch (error) {
@@ -143,23 +175,31 @@ export class CliGitHubDiffProvider extends BaseGitHubDiffProvider {
     milestone?: string;
   }): Promise<string> {
     try {
-      // Build gh CLI command with optional --draft flag
-      let command =
-        `gh pr create --repo "${escapeShellArg(owner)}/${escapeShellArg(repo)}" ` +
-        `--title "${escapeShellArg(title)}" ` +
-        `--body "${escapeShellArg(body)}" ` +
-        `--base "${escapeShellArg(baseBranch)}" ` +
-        `--head "${escapeShellArg(currentBranch)}"`;
+      // Build gh CLI args with optional --draft flag
+      const args = [
+        'pr',
+        'create',
+        '--repo',
+        `${owner}/${repo}`,
+        '--title',
+        title,
+        '--body',
+        body,
+        '--base',
+        baseBranch,
+        '--head',
+        currentBranch,
+      ];
 
       if (draft) {
-        command += ' --draft';
+        args.push('--draft');
       }
 
       if (milestone) {
-        command += ` --milestone "${escapeShellArg(milestone)}"`;
+        args.push('--milestone', milestone);
       }
 
-      const result = execSync(command).toString();
+      const result = execFileSync('gh', args).toString();
       return result.trim();
     } catch (error) {
       console.error('Error creating PR:', error);
